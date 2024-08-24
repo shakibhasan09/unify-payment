@@ -18,6 +18,7 @@ UnifyPayment is a TypeScript package that provides a unified interface for integ
 - **Paddle:** (upcoming).
 - **GooglePay:** (planing).
 - **Shopify:** (planing).
+- **SSLCommerz:** (planing).
 
 ## Installation
 
