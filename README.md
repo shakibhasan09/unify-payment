@@ -85,3 +85,9 @@ switch (webhookEvent.type) {
     break;
 }
 ```
+
+## Special Thanks
+
+A special thanks to **Piyush Garg** ([@piyushgargdev](https://www.youtube.com/@piyushgargdev)) for suggesting the idea behind this package. Piyush is a talented developer and content creator who shares valuable insights and ideas in the world of software development. His suggestion was the spark that led to the creation of UnifyPayment, aiming to simplify payment integrations for developers.
+
+We appreciate Piyush's contribution to the developer community and encourage you to check out his YouTube channel for more inspiring content and innovative ideas in the tech space.
