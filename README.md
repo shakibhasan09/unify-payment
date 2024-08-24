@@ -86,6 +86,44 @@ switch (webhookEvent.type) {
 }
 ```
 
+## Contributing
+
+We welcome contributions to UnifyPayment! If you'd like to help improve this package, here's how you can contribute:
+
+1. **Fork the Repository**: Start by forking the [UnifyPayment repository](https://github.com/shakibhasan09/unify-payment) on GitHub.
+
+2. **Clone Your Fork**: Clone your fork to your local machine for development.
+
+   ```bash
+   git clone https://github.com/shakibhasan09/unify-payment
+   ```
+
+3. Create a Branch: Create a new branch for your feature or bug fix.
+
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+4. **Make Changes**: Implement your changes or improvements to the codebase.
+5. **Test Your Changes**: Ensure that your changes don't break any existing functionality and add tests if necessary.
+6. **Commit Your Changes**: Commit your changes with a clear and descriptive commit message.
+   ```bash
+   git commit -m "Add a brief description of your changes"
+   ```
+7. **Push to Your Fork**: Push your changes to your GitHub fork
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+8. **Submit a Pull Request**: Go to the original UnifyPayment repository and submit a pull request with a clear description of your changes.
+
+### Guidelines
+
+- Follow the existing code style and conventions.
+- Write clear, concise commit messages.
+- Add or update tests for new features or bug fixes.
+- Update documentation as needed.
+- Be respectful and constructive in discussions and code reviews.
+
 ## Special Thanks
 
 A special thanks to **Piyush Garg** ([@piyushgargdev](https://www.youtube.com/@piyushgargdev)) for suggesting the idea behind this package. Piyush is a talented developer and content creator who shares valuable insights and ideas in the world of software development. His suggestion was the spark that led to the creation of UnifyPayment, aiming to simplify payment integrations for developers.
