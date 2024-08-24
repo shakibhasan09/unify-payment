@@ -1,61 +1,90 @@
-import { paymentInitDataProcess } from "../helpers/sslcommerz";
+import {
+  SSLCommerzCheckoutResponse,
+  SSLCommerzCreateCheckoutPayload,
+} from "../types/sslcommerz";
+
+export type SSLCommerzOptions = {
+  apiUrl: string;
+  store_id: string;
+  store_url?: string;
+  store_passwd: string;
+};
 
 export class SSLCommerz {
-  private baseURL: string;
-  constructor(
-    private store_id: string,
-    private store_passwd: string,
-    live: boolean = false,
-    private store_url: string
-  ) {
-    this.baseURL = `https://${live ? "securepay" : "sandbox"}.sslcommerz.com`;
+  constructor(private options: SSLCommerzOptions) {}
+
+  getApiBaseUrl() {
+    return this.options.apiUrl;
   }
-  storeInfo() {
+
+  getApiCheckoutUrl() {
+    return `${this.getApiBaseUrl()}/gwprocess/v4/api.php`;
+  }
+
+  getApiValidationUrl() {
+    return `${this.getApiBaseUrl()}/validator/api/validationserverAPI.php`;
+  }
+
+  getApiRefundUrl() {
+    return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
+  }
+
+  getApiRefundQueryUrl() {
+    return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
+  }
+
+  getApiTransactionQueryBySessionIdUrl() {
+    return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
+  }
+
+  getApiTransactionQueryByTransactionIdUrl() {
+    return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
+  }
+
+  getApiHeaders() {
     return {
-      store_id: this.store_id,
-      store_passwd: this.store_passwd,
-      store_url: this.store_url,
+      "Content-Type": "application/x-www-form-urlencoded",
     };
   }
-  InitUrl() {
-    return `${this.baseURL}/gwprocess/v4/api.php`;
-  }
-  ValidationUrl() {
-    return `${this.baseURL}/validator/api/validationserverAPI.php?`;
-  }
-  RefundUrl() {
-    return `${this.baseURL}/validator/api/merchantTransIDvalidationAPI.php?`;
-  }
-  RefundQueryUrl() {
-    return `${this.baseURL}/validator/api/merchantTransIDvalidationAPI.php?`;
-  }
-  TransactionQueryBySessionIdUrl() {
-    return `${this.baseURL}/validator/api/merchantTransIDvalidationAPI.php?`;
-  }
-  TransactionQueryByTransactionIdUrl() {
-    return `${this.baseURL}/validator/api/merchantTransIDvalidationAPI.php?`;
-  }
 }
+
 export class UnifySSLCommerz {
   constructor(private sslcommerz: SSLCommerz) {}
 
-  //get checkout url
-  async getCheckoutUrl(data: any, method: string = "POST") {
-    data.store_id = this.sslcommerz.storeInfo().store_id;
-    data.store_passwd = this.sslcommerz.storeInfo().store_passwd;
-    const processedData = await paymentInitDataProcess(data);
-    const response = await fetch(this.sslcommerz.InitUrl(), {
-      method: method, // *GET, POST, PUT, DELETE, etc.
-      mode: "cors", // no-cors, *cors, same-origin
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
-      redirect: "follow", // manual, *follow, error
-      referrer: this.sslcommerz.storeInfo().store_url, // no-referrer, *client
-      body: processedData, // body data type must match "Content-Type" header
-    })
-      .then((response) => response.json())
-      .catch((err) => console.log(err));
-    //return session.url;
-    return response;
+  private async fetch(
+    url: string,
+    params?: { method?: string; headers?: HeadersInit; body?: BodyInit }
+  ) {
+    return await fetch(url, {
+      method: params?.method || "GET",
+      headers: this.sslcommerz.getApiHeaders(),
+      body: params?.body,
+    });
+  }
+
+  private urlFormEncode(payload: Record<string, string | number>) {
+    return Object.entries(payload)
+      .map(
+        ([key, value]) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+      )
+      .join("&");
+  }
+
+  async getCheckoutUrl(payload: SSLCommerzCreateCheckoutPayload) {
+    const req = await this.fetch(this.sslcommerz.getApiCheckoutUrl(), {
+      method: "POST",
+      body: this.urlFormEncode(payload),
+      headers: this.sslcommerz.getApiHeaders(),
+    });
+
+    // TODO: handle parsing error
+    const res = (await req.json()) as SSLCommerzCheckoutResponse;
+
+    if (res.status === "FAILED") {
+      throw new Error(res.failedreason);
+    }
+
+    return res.redirectGatewayURL;
   }
 }
