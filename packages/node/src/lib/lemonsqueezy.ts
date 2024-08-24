@@ -40,6 +40,7 @@ export class UnifyLemonSqueezy {
       body: JSON.stringify(body),
     });
 
+    // TODO: handle parsing error
     const res = (await req.json()) as
       | { data: { attributes: { url: string } } }
       | { errors: [{ detail: string }] };
