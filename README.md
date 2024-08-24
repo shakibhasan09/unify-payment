@@ -25,7 +25,7 @@ UnifyPayment is a TypeScript package that provides a unified interface for integ
 To install the package, run the following command:
 
 ```bash
-npm install "haven't uploaded yet"
+npm install @unify-payment/node
 ```
 
 ## Usage
