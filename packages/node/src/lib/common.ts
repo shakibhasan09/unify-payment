@@ -1,10 +1,13 @@
 import Stripe from "stripe";
 import { LemonSqueezy, UnifyLemonSqueezy } from "./lemonsqueezy";
 import { UnifyStripe } from "./stripe";
+import { Paddle } from "@paddle/paddle-node-sdk";
+import { UnifyPaddle } from "./paddle";
 
 export type UnifyPaymentOptions = {
   stripe?: Stripe;
   lemonsqueezy?: LemonSqueezy;
+  paddle?: Paddle;
 };
 
 export class UnifyPayment<T extends UnifyPaymentOptions = UnifyPaymentOptions> {
@@ -14,6 +17,8 @@ export class UnifyPayment<T extends UnifyPaymentOptions = UnifyPaymentOptions> {
     ? UnifyLemonSqueezy
     : undefined;
 
+  paddle: T["paddle"] extends Paddle ? UnifyPaddle : undefined;
+
   constructor(options: T) {
     this.stripe = new UnifyStripe(options.stripe!) as T["stripe"] extends Stripe
       ? UnifyStripe
@@ -22,5 +27,9 @@ export class UnifyPayment<T extends UnifyPaymentOptions = UnifyPaymentOptions> {
     this.lemonsqueezy = new UnifyLemonSqueezy(
       options.lemonsqueezy!
     ) as T["lemonsqueezy"] extends LemonSqueezy ? UnifyLemonSqueezy : undefined;
+
+    this.paddle = new UnifyPaddle(options.paddle!) as T["paddle"] extends Paddle
+      ? UnifyPaddle
+      : undefined;
   }
 }
