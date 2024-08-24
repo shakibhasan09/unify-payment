@@ -31,3 +31,31 @@ const unify = new UnifyPayment({
 const url1 = await unify.stripe.getCheckoutUrl(stripePayload);
 const url2 = await unify.lemonsqueezy.getCheckoutUrl(lemonsqueezyPayload);
 ```
+
+## Webhook
+
+```typescript
+const unify = new UnifyPayment({
+  stripe: new Stripe(stripeKey),
+});
+
+const sign = c.req.header("Stripe-Signature");
+if (!sign) throw new Error("No Signature");
+
+const webhookEvent = await unify.stripe.webhook.verifySignature({
+  signature: sign,
+  secret: "1233243345534",
+  body: await c.req.text(),
+});
+
+if ("error" in webhookEvent) throw new Error(webhookEvent.error.message);
+
+switch (webhookEvent.event.type) {
+  case "checkout.session.async_payment_succeeded":
+    // Do something
+    break;
+
+  default:
+    break;
+}
+```

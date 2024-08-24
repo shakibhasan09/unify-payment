@@ -11,4 +11,36 @@ export class UnifyStripe {
 
     return session.url;
   }
+
+  webhook = new UnifyStripeWebhook(this.stripe);
+}
+
+export type StripeWebhookEventResponse =
+  | { error: Error }
+  | { event: Stripe.Event };
+
+export class UnifyStripeWebhook {
+  constructor(private stripe: Stripe) {}
+
+  async verifySignature(payload: {
+    signature: string;
+    secret: string;
+    body: string;
+  }): Promise<StripeWebhookEventResponse> {
+    try {
+      const event = await this.stripe.webhooks.constructEventAsync(
+        payload.body,
+        payload.signature,
+        payload.secret
+      );
+
+      return {
+        event,
+      };
+    } catch (err) {
+      return {
+        error: err as Error,
+      };
+    }
+  }
 }
