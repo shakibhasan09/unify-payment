@@ -12,6 +12,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@paddle/paddle-node-sdk": "^1.5.0",
     "stripe": "^16.8.0"
   }
 }
