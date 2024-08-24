@@ -1,4 +1,8 @@
 import { CheckoutCreateParams } from "../types/lemonsqueezy";
+import {
+  LemonSqueezyWebhookEevent,
+  LemonSqueezyWebhookEvents,
+} from "../types/lemonsqueezy.hook";
 
 export class LemonSqueezy {
   constructor(private apiKey: string) {}
@@ -45,5 +49,60 @@ export class UnifyLemonSqueezy {
     }
 
     return res.data.attributes.url;
+  }
+
+  webhook = new UnifyLemonSqueezyWebhook(this.lemonSqueezy);
+}
+
+export type LemonSqueezyWebhookEventResponse =
+  | { error: Error }
+  | {
+      event: LemonSqueezyWebhookEevent;
+      type: LemonSqueezyWebhookEvents;
+    };
+
+export class UnifyLemonSqueezyWebhook {
+  constructor(private lemonsqueezy: LemonSqueezy) {}
+
+  async verifySignature(payload: {
+    signature: string;
+    secret: string;
+    body: string;
+    x_event: string;
+  }): Promise<LemonSqueezyWebhookEventResponse> {
+    try {
+      const encoder = new TextEncoder();
+
+      const key = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(payload.secret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+      );
+
+      const hmac = await crypto.subtle.sign(
+        "HMAC",
+        key,
+        encoder.encode(payload.body)
+      );
+
+      const digest = Array.from(new Uint8Array(hmac))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+
+      if (digest !== payload.signature) {
+        throw new Error("Invalid signature");
+      }
+
+      return {
+        event: JSON.parse(payload.body) as LemonSqueezyWebhookEevent,
+        type: payload.x_event as LemonSqueezyWebhookEvents,
+      };
+    } catch (err) {
+      return {
+        error: err as Error,
+      };
+    }
   }
 }
