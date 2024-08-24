@@ -1,5 +1,5 @@
 import { paymentInitDataProcess } from "../helpers/sslcommerz";
-import type { checkoutParams } from "../types/sslcommerz";
+
 export class SSLCommerz {
   private baseURL: string;
   constructor(
