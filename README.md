@@ -13,9 +13,9 @@ UnifyPayment is a TypeScript package that provides a unified interface for integ
 
 - **Stripe:** (Checkout, Webhook) will add more functionality later.
 - **LemonSqueezy:** (Checkout, Webhook) will add more functionality later.
+- **Paddle:** (Checkout, Webhook) will add more functionality later.
 - **PayPal:** (upcoming).
 - **RazorPay:** (upcoming).
-- **Paddle:** (upcoming).
 - **GooglePay:** (planing).
 - **Shopify:** (planing).
 - **SSLCommerz:** (planing).
