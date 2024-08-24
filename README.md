@@ -9,6 +9,16 @@ UnifyPayment is a TypeScript package that provides a unified interface for integ
 - **Easy Integration:** Simplifies the integration process with well-documented methods and examples.
 - **Extensible:** Easily add support for new payment providers as needed.
 
+## Providers
+
+- **Stripe:** (Checkout, Webhook) will add more functionality later.
+- **LemonSqueezy:** (Checkout, Webhook) will add more functionality later.
+- **PayPal:** (upcoming).
+- **RazorPay:** (upcoming).
+- **Paddle:** (upcoming).
+- **GooglePay:** (planing).
+- **Shopify:** (planing).
+
 ## Installation
 
 To install the package, run the following command:
