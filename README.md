@@ -20,21 +20,23 @@ npm install unify-payment
 ## Usage
 
 ```typescript
-const stripeKey = process.env.STRIPE_API_SECRET_KEY!;
-const lemonsqueezyKey = process.env.LEMON_SECRET_KEY!;
-
+// Stripe
 const unify = new UnifyPayment({
-  stripe: new Stripe(stripeKey),
-  lemonsqueezy: new LemonSqueezy(lemonsqueezyKey),
+  stripe: new Stripe(process.env.STRIPE_API_SECRET_KEY!),
 });
+const redirect = await unify.stripe.getCheckoutUrl(stripePayload);
 
-const url1 = await unify.stripe.getCheckoutUrl(stripePayload);
-const url2 = await unify.lemonsqueezy.getCheckoutUrl(lemonsqueezyPayload);
+// LemonSqueezy
+const unify = new UnifyPayment({
+  lemonsqueezy: new LemonSqueezy(process.env.LEMON_SECRET_KEY!),
+});
+const redirect = await unify.lemonsqueezy.getCheckoutUrl(lemonsqueezyPayload);
 ```
 
 ## Webhook
 
 ```typescript
+// Stripe
 const unify = new UnifyPayment({
   stripe: new Stripe(stripeKey),
 });
@@ -44,7 +46,7 @@ if (!sign) throw new Error("No Signature");
 
 const webhookEvent = await unify.stripe.webhook.verifySignature({
   signature: sign,
-  secret: "1233243345534",
+  secret: "PUT YOUR WEBHOOK SECRET HERE",
   body: await c.req.text(),
 });
 
@@ -52,7 +54,31 @@ if ("error" in webhookEvent) throw new Error(webhookEvent.error.message);
 
 switch (webhookEvent.event.type) {
   case "checkout.session.async_payment_succeeded":
-    // Do something
+    break;
+
+  default:
+    break;
+}
+
+// LemonSqueezy
+const unify = new UnifyPayment({
+  lemonsqueezy: new LemonSqueezy(lemonsqueezyKey),
+});
+
+const sign = c.req.header("X-Signature");
+if (!sign) throw new Error("No Signature");
+
+const webhookEvent = await unify.lemonsqueezy.webhook.verifySignature({
+  signature: sign,
+  secret: "PUT YOUR WEBHOOK SECRET HERE",
+  body: await c.req.text(),
+  x_event: c.req.header("X-Event-Name")!,
+});
+
+if ("error" in webhookEvent) throw new Error(webhookEvent.error.message);
+
+switch (webhookEvent.type) {
+  case "order_refunded":
     break;
 
   default:
