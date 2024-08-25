@@ -1,13 +1,16 @@
+import * as crypto from "crypto";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import {
+  IConfirmPaymentArgs,
   ICreatePaymentArgs,
   INagadCreatePaymentBody,
+  INagadDecryptResponse,
+  INagadInitializeResponse,
   INagadSensitiveData,
   nagadOptions,
 } from "../types/nagad";
-import * as crypto from "crypto";
 
 export class Nagad {
   constructor(private options: nagadOptions) {
@@ -17,10 +20,10 @@ export class Nagad {
 
   getApiBaseUrl() {
     if (this.options.is_live) {
-      return "https://api.mynagad.com/api/dfs/";
+      return "https://api.mynagad.com/api/dfs";
     }
 
-    return "http://sandbox.mynagad.com:10080/remote-payment-gateway-1.0/api/dfs/";
+    return "http://sandbox.mynagad.com:10080/remote-payment-gateway-1.0/api/dfs";
   }
 
   getMerchantId() {
@@ -39,6 +42,14 @@ export class Nagad {
     return this.options.public_key;
   }
 
+  getTimeStamp() {
+    return dayjs().tz("Asia/Dhaka").format("YYYYMMDDHHmmss");
+  }
+
+  getCallbackUrl() {
+    return this.options.callbackURL;
+  }
+
   getApiHeaders() {
     return {
       Accept: "application/json",
@@ -51,21 +62,24 @@ export class Nagad {
 export class UnifyNagad {
   constructor(private nagad: Nagad) {}
 
-  private async fetch(
+  private async fetch<T extends {}>(
     url: string,
     params?: { method?: string; headers?: HeadersInit; body?: BodyInit }
-  ) {
-    console.log("run", url);
-    return await fetch(url, {
-      method: params?.method || "POST",
+  ): Promise<T> {
+    const req = await fetch(url, {
+      method: params?.method || "GET",
       headers: params?.headers,
       body: params?.body,
     });
+
+    if (req.status !== 200) throw new Error("Failed to fetch");
+
+    return await req.json();
   }
 
   async getCheckoutUrl(nagadPaymentConfig: ICreatePaymentArgs) {
-    const timestamp = this.getTimeStamp();
-    const endpoint = `${this.nagad.getApiBaseUrl()}check-out/initialize/${this.nagad.getMerchantId()}/${nagadPaymentConfig.orderId}`;
+    const timestamp = this.nagad.getTimeStamp();
+    const endpoint = `${this.nagad.getApiBaseUrl()}/check-out/initialize/${this.nagad.getMerchantId()}/${nagadPaymentConfig.orderId}`;
 
     const sensitive: INagadSensitiveData = {
       datetime: timestamp,
@@ -81,39 +95,69 @@ export class UnifyNagad {
       accountNumber: this.nagad.getMerchantNumber(),
     };
 
-    console.log("payload", payload);
-
-    // console.log("payload", payload);
-
-    return new Response("");
-
-    const newIP =
-      nagadPaymentConfig.ip === "::1" || nagadPaymentConfig.ip === "127.0.0.1"
-        ? "103.100.200.100"
-        : nagadPaymentConfig.ip;
-    const response = await this.fetch(endpoint, {
+    const res = await this.fetch<INagadInitializeResponse>(endpoint, {
+      method: "POST",
       headers: {
         ...this.nagad.getApiHeaders(),
-        "X-KM-IP-V4": newIP,
+        "X-KM-IP-V4": nagadPaymentConfig.ip,
         "X-KM-Client-Type": nagadPaymentConfig.clientType,
       },
       body: JSON.stringify(payload),
-      method: "POST",
     });
-    console.log(response);
-    console.log("response");
-    return response;
+
+    const decrypt = this.decrypt<INagadDecryptResponse>(res.sensitiveData);
+
+    const { callBackUrl } = await this.confirmPayment({
+      ip: nagadPaymentConfig.ip,
+      challenge: decrypt.challenge,
+      amount: nagadPaymentConfig.amount,
+      orderId: nagadPaymentConfig.orderId,
+      clientType: nagadPaymentConfig.clientType,
+      paymentReferenceId: decrypt.paymentReferenceId,
+      productDetails: nagadPaymentConfig.productDetails,
+    });
+
+    return callBackUrl;
   }
 
-  private getTimeStamp() {
-    return dayjs().tz("Asia/Dhaka").format("YYYYMMDDHHmmss");
+  private async confirmPayment(params: IConfirmPaymentArgs) {
+    const sensitiveData = {
+      currencyCode: "050",
+      amount: params.amount,
+      orderId: params.orderId,
+      challenge: params.challenge,
+      merchantId: this.nagad.getMerchantId(),
+    };
+
+    const payload = {
+      signature: this.sign(sensitiveData),
+      paymentRefId: params.paymentReferenceId,
+      sensitiveData: this.encrypt(sensitiveData),
+      merchantCallbackURL: this.nagad.getCallbackUrl(),
+      additionalMerchantInfo: {
+        ...params.productDetails,
+      },
+    };
+
+    return await this.fetch<{ callBackUrl: string; status: string }>(
+      `${this.nagad.getApiBaseUrl()}/check-out/complete/${params.paymentReferenceId}`,
+      {
+        method: "POST",
+        headers: {
+          ...this.nagad.getApiHeaders(),
+          "X-KM-IP-V4": params.ip,
+          "X-KM-Client-Type": params.clientType,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
   }
 
-  private createHash(string: string): string {
+  private createHash(string: string) {
     return crypto.createHash("sha1").update(string).digest("hex").toUpperCase();
   }
 
-  private encrypt<T>(data: T): string {
+  private encrypt(data: Record<string, string>) {
     const publicKey = `-----BEGIN PUBLIC KEY-----\n${this.nagad.getPublicKey()}\n-----END PUBLIC KEY-----`;
 
     const encrypted = crypto.publicEncrypt(
@@ -128,19 +172,25 @@ export class UnifyNagad {
   }
 
   private sign(data: string | Record<string, string>) {
+    const privateKey = `-----BEGIN PRIVATE KEY-----\n${this.nagad.getPrivateKey()}\n-----END PRIVATE KEY-----`;
+
     const signerObject = crypto.createSign("SHA256");
-
     signerObject.update(JSON.stringify(data));
-
     signerObject.end();
 
-    console.log(
-      "run sing",
-      signerObject.sign(this.nagad.getPrivateKey(), "base64")
-    );
-
-    const privateKey = `-----BEGIN RSA PRIVATE KEY-----\n${this.nagad.getPrivateKey()}\n-----END RSA PRIVATE KEY-----`;
-
     return signerObject.sign(privateKey, "base64");
+  }
+
+  private decrypt<T>(data: string): T {
+    const privateKey = `-----BEGIN PRIVATE KEY-----\n${this.nagad.getPrivateKey()}\n-----END PRIVATE KEY-----`;
+
+    const decrypted = crypto
+      .privateDecrypt(
+        { key: privateKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+        Buffer.from(data, "base64")
+      )
+      .toString();
+
+    return JSON.parse(decrypted);
   }
 }

@@ -36,3 +36,24 @@ export interface INagadCreatePaymentBody extends Record<string, string> {
   sensitiveData: string;
   signature: string;
 }
+
+export interface INagadDecryptResponse {
+  paymentReferenceId: string;
+  challenge: string;
+  acceptDateTime: string;
+}
+
+export interface INagadInitializeResponse {
+  sensitiveData: string;
+  signature: string;
+}
+
+export interface IConfirmPaymentArgs {
+  ip: string;
+  amount: string;
+  orderId: string;
+  challenge: string;
+  paymentReferenceId: string;
+  productDetails: Record<string, string>;
+  clientType: string;
+}
