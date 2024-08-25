@@ -1,4 +1,3 @@
-import * as crypto from "crypto";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
@@ -8,6 +7,7 @@ import {
   INagadSensitiveData,
   nagadOptions,
 } from "../types/nagad";
+import crypto from "node:crypto";
 
 export class Nagad {
   constructor(private options: nagadOptions) {
@@ -34,7 +34,7 @@ export class Nagad {
   }
 
   getPublicKey() {
-    return this.options.private_key;
+    return this.options.public_key;
   }
 
   getApiHeaders() {
@@ -48,6 +48,7 @@ export class Nagad {
 
 export class UnifyNagad {
   constructor(private nagad: Nagad) {}
+
   private async fetch(
     url: string,
     params?: { method?: string; headers?: HeadersInit; body?: BodyInit }
@@ -61,22 +62,24 @@ export class UnifyNagad {
   }
 
   async getCheckoutUrl(nagadPaymentConfig: ICreatePaymentArgs) {
-    const endpoint = `${this.nagad.getApiBaseUrl()}check-out/initialize/${this.nagad.getMerchantId()}/${nagadPaymentConfig.orderId}`;
     const timestamp = this.getTimeStamp();
+    const endpoint = `${this.nagad.getApiBaseUrl()}check-out/initialize/${this.nagad.getMerchantId()}/${nagadPaymentConfig.orderId}`;
 
     const sensitive: INagadSensitiveData = {
-      merchantId: this.nagad.getMerchantId(),
       datetime: timestamp,
       orderId: nagadPaymentConfig.orderId,
-      challenge: this.createHash(nagadPaymentConfig.orderId),
+      merchantId: this.nagad.getMerchantId(),
+      challenge: await this.generateHash(nagadPaymentConfig.orderId),
     };
 
     const payload: INagadCreatePaymentBody = {
-      accountNumber: this.nagad.getMerchantNumber(),
       dateTime: timestamp,
-      sensitiveData: this.encrypt(sensitive),
       signature: this.sign(sensitive),
+      sensitiveData: this.encrypt(sensitive),
+      accountNumber: this.nagad.getMerchantNumber(),
     };
+
+    return new Response("");
 
     const newIP =
       nagadPaymentConfig.ip === "::1" || nagadPaymentConfig.ip === "127.0.0.1"
@@ -97,44 +100,48 @@ export class UnifyNagad {
   }
 
   private getTimeStamp() {
-    const timestamp = dayjs().tz("Asia/Dhaka").format("YYYYMMDDHHmmss");
-    return timestamp;
+    return dayjs().tz("Asia/Dhaka").format("YYYYMMDDHHmmss");
   }
 
-  private createHash(string: string): string {
-    return crypto.createHash("sha1").update(string).digest("hex").toUpperCase();
+  private async generateHash(input: string) {
+    const encoder = new TextEncoder();
+
+    const hashBuffer = await crypto.subtle.digest(
+      "SHA-1",
+      encoder.encode(input)
+    );
+
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
-  private encrypt<T>(data: T): string {
+  private encrypt(data: Record<string, string>): string {
     const publicKey = `-----BEGIN PUBLIC KEY-----\n${this.nagad.getPublicKey()}\n-----END PUBLIC KEY-----`;
+
     try {
-      // Convert the data to a buffer
-      const buffer = Buffer.from(JSON.stringify(data), "utf8");
-      // Encrypt the data using the public key
       const encrypted = crypto.publicEncrypt(
         {
           key: publicKey,
-          padding: crypto.constants.RSA_PKCS1_PADDING,
+          padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+          oaepHash: "sha1",
         },
-        buffer
+        Buffer.from(JSON.stringify(data), "utf8")
       );
 
-      // Return the encrypted data encoded in base64
       return encrypted.toString("base64");
     } catch (error: any) {
       throw new Error("Encryption failed: " + error.message);
     }
-    return "";
   }
+
   private sign(data: string | Record<string, string>) {
-    const signerObject = crypto.createSign("SHA256");
-    signerObject.update(JSON.stringify(data));
-    signerObject.end();
-    console.log(
-      "run sing",
-      signerObject.sign(this.nagad.getPrivateKey(), "base64")
-    );
     const privateKey = `-----BEGIN RSA PRIVATE KEY-----\n${this.nagad.getPrivateKey()}\n-----END RSA PRIVATE KEY-----`;
-    return signerObject.sign(privateKey, "base64");
+
+    const demo = crypto.createSign("SHA256");
+
+    demo.update(JSON.stringify(data));
+
+    return demo.sign(privateKey, "base64");
   }
 }
