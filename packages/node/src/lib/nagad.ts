@@ -7,7 +7,7 @@ import {
   INagadSensitiveData,
   nagadOptions,
 } from "../types/nagad";
-import crypto from "node:crypto";
+import * as crypto from "crypto";
 
 export class Nagad {
   constructor(private options: nagadOptions) {
@@ -18,13 +18,15 @@ export class Nagad {
   getApiBaseUrl() {
     if (this.options.is_live) {
       return "https://api.mynagad.com/api/dfs/";
-    } else {
-      return "http://sandbox.mynagad.com:10080/remote-payment-gateway-1.0/api/dfs/";
     }
+
+    return "http://sandbox.mynagad.com:10080/remote-payment-gateway-1.0/api/dfs/";
   }
+
   getMerchantId() {
     return this.options.merchant_id;
   }
+
   getMerchantNumber() {
     return this.options.merchant_number;
   }
@@ -39,8 +41,8 @@ export class Nagad {
 
   getApiHeaders() {
     return {
-      "Content-Type": "application/json",
       Accept: "application/json",
+      "Content-Type": "application/json",
       "X-KM-Api-Version": this.options.apiVersion,
     };
   }
@@ -69,7 +71,7 @@ export class UnifyNagad {
       datetime: timestamp,
       orderId: nagadPaymentConfig.orderId,
       merchantId: this.nagad.getMerchantId(),
-      challenge: await this.generateHash(nagadPaymentConfig.orderId),
+      challenge: this.createHash(nagadPaymentConfig.orderId),
     };
 
     const payload: INagadCreatePaymentBody = {
@@ -78,6 +80,10 @@ export class UnifyNagad {
       sensitiveData: this.encrypt(sensitive),
       accountNumber: this.nagad.getMerchantNumber(),
     };
+
+    console.log("payload", payload);
+
+    // console.log("payload", payload);
 
     return new Response("");
 
@@ -103,45 +109,38 @@ export class UnifyNagad {
     return dayjs().tz("Asia/Dhaka").format("YYYYMMDDHHmmss");
   }
 
-  private async generateHash(input: string) {
-    const encoder = new TextEncoder();
-
-    const hashBuffer = await crypto.subtle.digest(
-      "SHA-1",
-      encoder.encode(input)
-    );
-
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  private createHash(string: string): string {
+    return crypto.createHash("sha1").update(string).digest("hex").toUpperCase();
   }
 
-  private encrypt(data: Record<string, string>): string {
+  private encrypt<T>(data: T): string {
     const publicKey = `-----BEGIN PUBLIC KEY-----\n${this.nagad.getPublicKey()}\n-----END PUBLIC KEY-----`;
 
-    try {
-      const encrypted = crypto.publicEncrypt(
-        {
-          key: publicKey,
-          padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-          oaepHash: "sha1",
-        },
-        Buffer.from(JSON.stringify(data), "utf8")
-      );
+    const encrypted = crypto.publicEncrypt(
+      {
+        key: publicKey,
+        padding: crypto.constants.RSA_PKCS1_PADDING,
+      },
+      Buffer.from(JSON.stringify(data), "utf8")
+    );
 
-      return encrypted.toString("base64");
-    } catch (error: any) {
-      throw new Error("Encryption failed: " + error.message);
-    }
+    return encrypted.toString("base64");
   }
 
   private sign(data: string | Record<string, string>) {
+    const signerObject = crypto.createSign("SHA256");
+
+    signerObject.update(JSON.stringify(data));
+
+    signerObject.end();
+
+    console.log(
+      "run sing",
+      signerObject.sign(this.nagad.getPrivateKey(), "base64")
+    );
+
     const privateKey = `-----BEGIN RSA PRIVATE KEY-----\n${this.nagad.getPrivateKey()}\n-----END RSA PRIVATE KEY-----`;
 
-    const demo = crypto.createSign("SHA256");
-
-    demo.update(JSON.stringify(data));
-
-    return demo.sign(privateKey, "base64");
+    return signerObject.sign(privateKey, "base64");
   }
 }
