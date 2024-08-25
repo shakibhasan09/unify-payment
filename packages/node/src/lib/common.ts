@@ -4,12 +4,14 @@ import { LemonSqueezy, UnifyLemonSqueezy } from "./lemonsqueezy";
 import { UnifyPaddle } from "./paddle";
 import { SSLCommerz, UnifySSLCommerz } from "./sslcommerz";
 import { UnifyStripe } from "./stripe";
+import { Nagad, UnifyNagad } from "./nagad";
 
 export type UnifyPaymentOptions = {
   stripe?: Stripe;
   lemonsqueezy?: LemonSqueezy;
   sslcommerz?: SSLCommerz;
   paddle?: Paddle;
+  nagad?: Nagad;
 };
 
 export class UnifyPayment<T extends UnifyPaymentOptions = UnifyPaymentOptions> {
@@ -19,6 +21,7 @@ export class UnifyPayment<T extends UnifyPaymentOptions = UnifyPaymentOptions> {
     ? UnifyLemonSqueezy
     : undefined;
   paddle: T["paddle"] extends Paddle ? UnifyPaddle : undefined;
+  nagad: T["nagad"] extends Nagad ? UnifyNagad : undefined;
 
   constructor(options: T) {
     // stripe
@@ -39,6 +42,11 @@ export class UnifyPayment<T extends UnifyPaymentOptions = UnifyPaymentOptions> {
     // paddle
     this.paddle = new UnifyPaddle(options.paddle!) as T["paddle"] extends Paddle
       ? UnifyPaddle
+      : undefined;
+
+    // nagad
+    this.nagad = new UnifyNagad(options.nagad!) as T["nagad"] extends Nagad
+      ? UnifyNagad
       : undefined;
   }
 }
