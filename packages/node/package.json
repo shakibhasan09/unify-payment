@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@paddle/paddle-node-sdk": "^1.5.0",
+    "axios": "^1.7.5",
     "dayjs": "^1.11.13",
     "stripe": "^16.8.0"
   }
