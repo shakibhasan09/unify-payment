@@ -12,9 +12,11 @@ export class Paypal {
   }
 
   getApiBaseUrl() {
-    return this.options.sandbox
-      ? "https://api-m.sandbox.paypal.com"
-      : "https://api.paypal.com"; //TODO: check and update the url
+    if (this.options.sandbox) {
+      return "https://api-m.sandbox.paypal.com";
+    }
+
+    return "https://api.paypal.com";
   }
 
   getClientId() {
@@ -33,7 +35,7 @@ export class Paypal {
 export class UnifyPaypal {
   constructor(private paypal: Paypal) {}
 
-  private async fetch(
+  private async fetch<T extends {}>(
     url: string,
     params: {
       method?: string;
@@ -41,12 +43,15 @@ export class UnifyPaypal {
       body: BodyInit;
     }
   ) {
-    return await fetch(url, {
+    const req = await fetch(url, {
       method: params?.method || "GET",
       headers: params.headers,
       body: params?.body,
     });
-    //TODO: handle the error
+
+    const res = await req.json();
+
+    return res as T;
   }
 
   async getAccessToken() {
@@ -55,7 +60,8 @@ export class UnifyPaypal {
     const auth = btoa(
       `${this.paypal.getClientId()}:${this.paypal.getClientSecret()}`
     );
-    const response = await this.fetch(url, {
+
+    const response = await this.fetch<paypalAuthResponse>(url, {
       method: "POST",
       headers: {
         Authorization: `Basic ${auth}`,
@@ -64,20 +70,30 @@ export class UnifyPaypal {
       body: "grant_type=client_credentials",
     });
 
-    return ((await response.json()) as paypalAuthResponse).access_token;
+    return response.access_token;
   }
 
   async getCheckoutUrl(payload: paypalPayload) {
     const accessToken = await this.getAccessToken();
-    const res = await this.fetch(this.paypal.getApiCheckoutUrl(), {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    const resData = (await res.json()) as PayPalOrderResponse;
-    return resData.links.find((link) => link.rel === "approve")?.href;
+
+    const res = await this.fetch<PayPalOrderResponse>(
+      this.paypal.getApiCheckoutUrl(),
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const url = res.links.find((link) => link.rel === "approve")?.href;
+
+    if (!url) {
+      throw new Error("Failed to get checkout url");
+    }
+
+    return url;
   }
 }
