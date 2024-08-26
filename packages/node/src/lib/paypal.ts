@@ -1,5 +1,6 @@
 import {
   link,
+  paypalAuthResponse,
   paypalOptions,
   PayPalOrderResponse,
   paypalPayload,
@@ -45,6 +46,7 @@ export class UnifyPaypal {
       headers: params.headers,
       body: params?.body,
     });
+    //TODO: handle the error
   }
 
   async getAccessToken() {
@@ -53,18 +55,16 @@ export class UnifyPaypal {
     const auth = btoa(
       `${this.paypal.getClientId()}:${this.paypal.getClientSecret()}`
     );
-
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Basic ${auth}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: "grant_type=client_credentials",
-    })
-      .then((response) => response.json())
-      .catch((error) => console.error("Error:", error)); //TODO: handle error
-    return response.access_token;
+    });
+
+    return ((await response.json()) as paypalAuthResponse).access_token;
   }
 
   async getCheckoutUrl(payload: paypalPayload) {
