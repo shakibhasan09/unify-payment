@@ -11,6 +11,7 @@ import {
   INagadSensitiveData,
   nagadOptions,
 } from "../types/nagad";
+import axios from "axios";
 
 export class Nagad {
   constructor(private options: nagadOptions) {
@@ -64,17 +65,22 @@ export class UnifyNagad {
 
   private async fetch<T extends {}>(
     url: string,
-    params?: { method?: string; headers?: HeadersInit; body?: BodyInit }
+    params?: {
+      method?: string;
+      headers?: Record<string, string>;
+      body?: BodyInit;
+    }
   ): Promise<T> {
-    const req = await fetch(url, {
-      method: params?.method || "GET",
+    const req = await axios({
+      url,
+      data: params?.body,
       headers: params?.headers,
-      body: params?.body,
+      method: params?.method || "GET",
     });
 
     if (req.status !== 200) throw new Error("Failed to fetch");
 
-    return await req.json();
+    return req.data as T;
   }
 
   async getCheckoutUrl(nagadPaymentConfig: ICreatePaymentArgs) {
