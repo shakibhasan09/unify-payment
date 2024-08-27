@@ -11,6 +11,7 @@ export class UnifyFetch {
   ): Promise<[T, Response]> {
     const req = await fetch(url, options);
     const res = (await req.json()) as T;
+
     return [res, req];
   }
 
