@@ -39,3 +39,11 @@ export interface IBkashCheckoutResponse {
   statusCode: string;
   statusMessage: string;
 }
+
+export interface IBkashPayloadProps {
+  apiUrl: string;
+  username: string;
+  password: string;
+  app_key: string;
+  app_secret: string;
+}

@@ -3,37 +3,30 @@ import {
   IBkashCheckoutOptions,
   IBkashCheckoutResponse,
   IBkashErrorResponse,
+  IBkashPayloadProps,
 } from "../types/bkash";
 import { UnifyFetch } from "../utils/fetch";
 
-type BkashPayloadProps = {
-  apiUrl: string;
-  username: string;
-  password: string;
-  app_key: string;
-  app_secret: string;
-};
-
 export class Bkash extends UnifyFetch {
-  constructor(private options: BkashPayloadProps) {
+  constructor(private options: IBkashPayloadProps) {
     super();
   }
 
-  getApiBaseUrl() {
+  private getAppKey() {
+    return this.options.app_key;
+  }
+
+  private getApiBaseUrl() {
     return this.options.apiUrl;
   }
 
-  getApiRequestHeaders() {
+  private getApiRequestHeaders() {
     return {
       "Content-Type": "application/json",
       Accept: "application/json",
       username: this.options.username,
       password: this.options.password,
     };
-  }
-
-  getAppKey() {
-    return this.options.app_key;
   }
 
   async getAccessToken() {
@@ -54,24 +47,18 @@ export class Bkash extends UnifyFetch {
 
     return res.id_token;
   }
-}
-
-export class UnifyBkash extends UnifyFetch {
-  constructor(private bkash: Bkash) {
-    super();
-  }
 
   async getCheckoutUrl(options: IBkashCheckoutOptions) {
-    const accessToken = await this.bkash.getAccessToken();
+    const accessToken = await this.getAccessToken();
 
     const [res] = await this.jsonFetch<
       IBkashCheckoutResponse | IBkashErrorResponse
-    >(`${this.bkash.getApiBaseUrl()}/tokenized/checkout/create`, {
+    >(`${this.getApiBaseUrl()}/tokenized/checkout/create`, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
-        "X-App-Key": this.bkash.getAppKey(),
+        "X-App-Key": this.getAppKey(),
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(options),
