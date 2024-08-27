@@ -1,8 +1,9 @@
 {
   "name": "@unify-payment/node",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
   "keywords": [
     "starter",
     "kit",
@@ -14,23 +15,20 @@
     "frontend",
     "backend",
     "fullstack",
-    "starter-kit",
-    "laravel"
+    "starter-kit"
   ],
+  "homepage": "https://github.com/shakibhasan09/unify-payment",
   "repository": {
-    "type": "git",
-    "url": "git+https://github.com/shakibhasan09/unify-payment.git"
+    "url": "https://github.com/shakibhasan09/unify-payment"
   },
   "license": "ISC",
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "npx tsc -b",
-    "dev": "npx tsc -b -w"
+    "build": "tsup",
+    "dev": "tsup --watch"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.7",
+    "tsup": "^8.2.4",
     "typescript": "^5.4.5"
   },
   "dependencies": {

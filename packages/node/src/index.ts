@@ -1,8 +1,15 @@
-export * from "./lib/common";
-export * from "./lib/lemonsqueezy";
-export * from "./lib/stripe";
-export * from "./lib/sslcommerz";
-export * from "./lib/paypal";
-export * from "./types/lemonsqueezy";
-export * from "./types/sslcommerz";
-export * from "./types/paypal";
+import { Bkash } from "./lib/bkash";
+import { LemonSqueezy } from "./lib/lemonsqueezy";
+import { Paypal } from "./lib/paypal";
+import { SSLCommerz } from "./lib/sslcommerz";
+import { Stripe } from "./lib/stripe";
+
+const UnifyPayment = {
+  LemonSqueezy,
+  Bkash,
+  Paypal,
+  SSLCommerz,
+  Stripe,
+};
+
+export { UnifyPayment };

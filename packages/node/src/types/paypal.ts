@@ -1,10 +1,10 @@
-export interface paypalOptions {
+export interface IPaypalOptions {
   clientId: string;
   clientSecret: string;
   sandbox?: boolean;
 }
 
-export interface paypalPayload {
+export interface IPaypalPayload {
   intent: "CAPTURE";
   purchase_units: {
     items: {
@@ -37,7 +37,7 @@ export interface paypalPayload {
   };
 }
 
-export interface paypalAuthResponse {
+export interface IPaypalAuthResponse {
   access_token: string;
   token_type: string;
   app_id: string;
@@ -46,21 +46,12 @@ export interface paypalAuthResponse {
   scope: string;
 }
 
-export interface PayPalOrderResponse {
+export interface IPayPalOrderResponse {
   id: string;
   status: string;
-  links: link[];
-}
-export interface link {
-  href: string;
-  rel: string;
-  method: string;
-}
-export interface paypalAuthResponse {
-  access_token: string;
-  token_type: string;
-  app_id: string;
-  expires_in: number;
-  nonce: string;
-  scope: string;
+  links: {
+    href: string;
+    rel: string;
+    method: string;
+  }[];
 }
