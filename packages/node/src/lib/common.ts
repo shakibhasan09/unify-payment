@@ -1,27 +1,38 @@
 import { Paddle } from "@paddle/paddle-node-sdk";
 import Stripe from "stripe";
+import { Bkash, UnifyBkash } from "./bkash";
 import { LemonSqueezy, UnifyLemonSqueezy } from "./lemonsqueezy";
 import { UnifyPaddle } from "./paddle";
+import { Paypal, UnifyPaypal } from "./paypal";
 import { SSLCommerz, UnifySSLCommerz } from "./sslcommerz";
 import { UnifyStripe } from "./stripe";
 import { Nagad, UnifyNagad } from "./nagad";
 
-export type UnifyPaymentOptions = {
+type UnifyPaymentOptions = {
   stripe?: Stripe;
   lemonsqueezy?: LemonSqueezy;
   sslcommerz?: SSLCommerz;
   paddle?: Paddle;
   nagad?: Nagad;
+  paypal?: Paypal;
+  bkash?: Bkash;
 };
 
 export class UnifyPayment<T extends UnifyPaymentOptions = UnifyPaymentOptions> {
   stripe: T["stripe"] extends Stripe ? UnifyStripe : undefined;
+
   sslcommerz: T["sslcommerz"] extends SSLCommerz ? UnifySSLCommerz : undefined;
+
   lemonsqueezy: T["lemonsqueezy"] extends LemonSqueezy
     ? UnifyLemonSqueezy
     : undefined;
+
   paddle: T["paddle"] extends Paddle ? UnifyPaddle : undefined;
   nagad: T["nagad"] extends Nagad ? UnifyNagad : undefined;
+
+  paypal: T["paypal"] extends Paypal ? UnifyPaypal : undefined;
+
+  bkash: T["bkash"] extends Bkash ? UnifyBkash : undefined;
 
   constructor(options: T) {
     // stripe
@@ -47,6 +58,15 @@ export class UnifyPayment<T extends UnifyPaymentOptions = UnifyPaymentOptions> {
     // nagad
     this.nagad = new UnifyNagad(options.nagad!) as T["nagad"] extends Nagad
       ? UnifyNagad
+    
+    // bkash
+    this.bkash = new UnifyBkash(options.bkash!) as T["bkash"] extends Bkash
+      ? UnifyBkash
+      : undefined;
+
+    // paypal
+    this.paypal = new UnifyPaypal(options.paypal!) as T["paypal"] extends Paypal
+      ? UnifyPaypal
       : undefined;
   }
 }
