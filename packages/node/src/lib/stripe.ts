@@ -6,7 +6,7 @@ export class Stripe {
 
   constructor(
     private apiKey: string,
-    config: StripeSDK.StripeConfig
+    config?: StripeSDK.StripeConfig
   ) {
     this.stripe = new StripeSDK(apiKey, config);
   }
