@@ -13,9 +13,8 @@ UnifyPayment is a TypeScript package that provides a unified interface for integ
 
 - **Stripe:** (Checkout, Webhook) will add more functionality later.
 - **LemonSqueezy:** (Checkout, Webhook) will add more functionality later.
-- **Paddle:** (Checkout, Webhook) will add more functionality later.
 - **SSLCommerz:** (Checkout) will add more functionality later.
-- **PayPal:** (upcoming).
+- **PayPal:** (Checkout) will add more functionality later.
 - **RazorPay:** (upcoming).
 - **GooglePay:** (planing).
 - **Shopify:** (planing).
@@ -32,30 +31,36 @@ npm install @unify-payment/node
 
 ```typescript
 // Stripe
-const unify = new UnifyPayment({
-  stripe: new Stripe(process.env.STRIPE_API_SECRET_KEY!),
-});
-const redirect = await unify.stripe.getCheckoutUrl(stripePayload);
+const stripe = new UnifyPayment.Stripe(process.env.STRIPE_SECRET_KEY!);
+const redirect = await stripe.getCheckoutUrl(stripePayload);
 
 // LemonSqueezy
-const unify = new UnifyPayment({
-  lemonsqueezy: new LemonSqueezy(process.env.LEMON_SECRET_KEY!),
+const lemon = new UnifyPayment.LemonSqueezy(process.env.LEMON_SECRET_KEY!);
+const redirect = await lemon.getCheckoutUrl(lemonsqueezyPayload);
+
+// Paypal
+const paypal = new UnifyPayment.Paypal(process.env.PAYPAL_SECRET_KEY!);
+const redirect = await paypal.getCheckoutUrl(lemonsqueezyPayload);
+
+// SSLCommerz
+const ssl = new UnifyPayment.SSLCommerz({
+  apiUrl: process.env.SSLCOMMERZ_API_URL!,
+  store_id: process.env.SSLCOMMERZ_STORE_ID!,
+  store_passwd: process.env.SSLCOMMERZ_SECRET_KEY!,
 });
-const redirect = await unify.lemonsqueezy.getCheckoutUrl(lemonsqueezyPayload);
+const redirect = await ssl.getCheckoutUrl(sslCommerzPayload);
 ```
 
 ## Webhook
 
 ```typescript
 // Stripe
-const unify = new UnifyPayment({
-  stripe: new Stripe(stripeKey),
-});
+const stripe = new UnifyPayment.Stripe(process.env.STRIPE_SECRET_KEY!);
 
 const sign = c.req.header("Stripe-Signature");
 if (!sign) throw new Error("No Signature");
 
-const webhookEvent = await unify.stripe.webhook.verifySignature({
+const webhookEvent = await stripe.verifySignature({
   signature: sign,
   secret: "PUT YOUR WEBHOOK SECRET HERE",
   body: await c.req.text(),
@@ -72,14 +77,12 @@ switch (webhookEvent.event.type) {
 }
 
 // LemonSqueezy
-const unify = new UnifyPayment({
-  lemonsqueezy: new LemonSqueezy(lemonsqueezyKey),
-});
+const lemon = new UnifyPayment.LemonSqueezy(process.env.LEMON_SECRET_KEY!);
 
 const sign = c.req.header("X-Signature");
 if (!sign) throw new Error("No Signature");
 
-const webhookEvent = await unify.lemonsqueezy.webhook.verifySignature({
+const webhookEvent = await lemon.verifySignature({
   signature: sign,
   secret: "PUT YOUR WEBHOOK SECRET HERE",
   body: await c.req.text(),
