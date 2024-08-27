@@ -1,11 +1,12 @@
 import Stripe from "stripe";
 
+export { Stripe };
+
 export class UnifyStripe {
   constructor(private stripe: Stripe) {}
 
   async getCheckoutUrl(params: Stripe.Checkout.SessionCreateParams) {
     const session = await this.stripe.checkout.sessions.create(params);
-    // TODO: handle error
     if (!session.url) {
       throw new Error("Failed to get checkout url");
     }

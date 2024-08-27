@@ -5,10 +5,11 @@ import {
   PayPalOrderResponse,
   paypalPayload,
 } from "../types/paypal";
+import { UnifyFetch } from "../utils/fetch";
 
-export class Paypal {
+export class Paypal extends UnifyFetch {
   constructor(private options: paypalOptions) {
-    this.options.sandbox = options.sandbox || false;
+    super();
   }
 
   getApiBaseUrl() {
@@ -30,38 +31,13 @@ export class Paypal {
   getApiCheckoutUrl() {
     return `${this.getApiBaseUrl()}/v2/checkout/orders`;
   }
-}
-
-export class UnifyPaypal {
-  constructor(private paypal: Paypal) {}
-
-  private async fetch<T extends {}>(
-    url: string,
-    params: {
-      method?: string;
-      headers: HeadersInit;
-      body: BodyInit;
-    }
-  ) {
-    const req = await fetch(url, {
-      method: params?.method || "GET",
-      headers: params.headers,
-      body: params?.body,
-    });
-
-    const res = await req.json();
-
-    return res as T;
-  }
 
   async getAccessToken() {
-    const url = `${this.paypal.getApiBaseUrl()}/v1/oauth2/token`;
+    const url = `${this.getApiBaseUrl()}/v1/oauth2/token`;
 
-    const auth = btoa(
-      `${this.paypal.getClientId()}:${this.paypal.getClientSecret()}`
-    );
+    const auth = btoa(`${this.getClientId()}:${this.getClientSecret()}`);
 
-    const response = await this.fetch<paypalAuthResponse>(url, {
+    const [response] = await this.jsonFetch<paypalAuthResponse>(url, {
       method: "POST",
       headers: {
         Authorization: `Basic ${auth}`,
@@ -72,11 +48,17 @@ export class UnifyPaypal {
 
     return response.access_token;
   }
+}
+
+export class UnifyPaypal extends UnifyFetch {
+  constructor(private paypal: Paypal) {
+    super();
+  }
 
   async getCheckoutUrl(payload: paypalPayload) {
-    const accessToken = await this.getAccessToken();
+    const accessToken = await this.paypal.getAccessToken();
 
-    const res = await this.fetch<PayPalOrderResponse>(
+    const [res] = await this.jsonFetch<PayPalOrderResponse>(
       this.paypal.getApiCheckoutUrl(),
       {
         method: "POST",

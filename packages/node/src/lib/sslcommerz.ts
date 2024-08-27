@@ -2,6 +2,7 @@ import {
   SSLCommerzCheckoutResponse,
   SSLCommerzCreateCheckoutPayload,
 } from "../types/sslcommerz";
+import { UnifyFetch } from "../utils/fetch";
 
 export type SSLCommerzOptions = {
   apiUrl: string;
@@ -48,18 +49,9 @@ export class SSLCommerz {
   }
 }
 
-export class UnifySSLCommerz {
-  constructor(private sslcommerz: SSLCommerz) {}
-
-  private async fetch(
-    url: string,
-    params?: { method?: string; headers?: HeadersInit; body?: BodyInit }
-  ) {
-    return await fetch(url, {
-      method: params?.method || "GET",
-      headers: this.sslcommerz.getApiHeaders(),
-      body: params?.body,
-    });
+export class UnifySSLCommerz extends UnifyFetch {
+  constructor(private sslcommerz: SSLCommerz) {
+    super();
   }
 
   private urlFormEncode(payload: Record<string, string | number>) {
@@ -72,14 +64,14 @@ export class UnifySSLCommerz {
   }
 
   async getCheckoutUrl(payload: SSLCommerzCreateCheckoutPayload) {
-    const req = await this.fetch(this.sslcommerz.getApiCheckoutUrl(), {
-      method: "POST",
-      body: this.urlFormEncode(payload),
-      headers: this.sslcommerz.getApiHeaders(),
-    });
-
-    // TODO: handle parsing error
-    const res = (await req.json()) as SSLCommerzCheckoutResponse;
+    const [res] = await this.jsonFetch<SSLCommerzCheckoutResponse>(
+      this.sslcommerz.getApiCheckoutUrl(),
+      {
+        method: "POST",
+        body: this.urlFormEncode(payload),
+        headers: this.sslcommerz.getApiHeaders(),
+      }
+    );
 
     if (res.status === "FAILED") {
       throw new Error(res.failedreason);

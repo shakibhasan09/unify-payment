@@ -3,6 +3,7 @@ import {
   LemonSqueezyWebhookEevent,
   LemonSqueezyWebhookEvents,
 } from "../types/lemonsqueezy.hook";
+import { UnifyFetch } from "../utils/fetch";
 
 export class LemonSqueezy {
   constructor(private apiKey: string) {}
@@ -20,30 +21,21 @@ export class LemonSqueezy {
   }
 }
 
-export class UnifyLemonSqueezy {
-  constructor(private lemonSqueezy: LemonSqueezy) {}
+type GetCheckoutUrlType =
+  | { data: { attributes: { url: string } } }
+  | { errors: [{ detail: string }] };
 
-  private async fetch(
-    path: string,
-    params?: { method?: string; headers?: HeadersInit; body?: BodyInit }
-  ) {
-    return await fetch(`${this.lemonSqueezy.getApiBaseUrl()}${path}`, {
-      method: params?.method || "GET",
-      headers: this.lemonSqueezy.getApiRequestHeaders(),
-      body: params?.body,
-    });
+export class UnifyLemonSqueezy extends UnifyFetch {
+  constructor(private lemonSqueezy: LemonSqueezy) {
+    super();
   }
 
   async getCheckoutUrl(body: CheckoutCreateParams) {
-    const req = await this.fetch("/checkouts", {
+    const [res] = await this.jsonFetch<GetCheckoutUrlType>("/checkouts", {
       method: "POST",
       body: JSON.stringify(body),
+      headers: this.lemonSqueezy.getApiRequestHeaders(),
     });
-
-    // TODO: handle parsing error
-    const res = (await req.json()) as
-      | { data: { attributes: { url: string } } }
-      | { errors: [{ detail: string }] };
 
     if ("errors" in res) {
       throw new Error(res.errors[0].detail);
@@ -55,7 +47,7 @@ export class UnifyLemonSqueezy {
   webhook = new UnifyLemonSqueezyWebhook(this.lemonSqueezy);
 }
 
-export type LemonSqueezyWebhookEventResponse =
+type LemonSqueezyWebhookEventResponse =
   | { error: Error }
   | {
       event: LemonSqueezyWebhookEevent;

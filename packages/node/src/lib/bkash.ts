@@ -1,4 +1,12 @@
-export type BkashPayloadProps = {
+import {
+  IBkashAccessTokenResponse,
+  IBkashCheckoutOptions,
+  IBkashCheckoutResponse,
+  IBkashErrorResponse,
+} from "../types/bkash";
+import { UnifyFetch } from "../utils/fetch";
+
+type BkashPayloadProps = {
   apiUrl: string;
   username: string;
   password: string;
@@ -6,33 +14,73 @@ export type BkashPayloadProps = {
   app_secret: string;
 };
 
-export class Bkash {
-  private apiUrl: string;
-
-  constructor(private payload: BkashPayloadProps) {
-    this.apiUrl = payload.apiUrl;
+export class Bkash extends UnifyFetch {
+  constructor(private options: BkashPayloadProps) {
+    super();
   }
 
   getApiBaseUrl() {
-    return this.apiUrl;
+    return this.options.apiUrl;
   }
 
   getApiRequestHeaders() {
     return {
       "Content-Type": "application/json",
       Accept: "application/json",
-      username: this.payload.username,
-      password: this.payload.password,
+      username: this.options.username,
+      password: this.options.password,
     };
+  }
+
+  getAppKey() {
+    return this.options.app_key;
+  }
+
+  async getAccessToken() {
+    const [res] = await this.jsonFetch<
+      IBkashAccessTokenResponse | IBkashErrorResponse
+    >(`${this.getApiBaseUrl()}/tokenized/checkout/token/grant`, {
+      method: "POST",
+      headers: this.getApiRequestHeaders(),
+      body: JSON.stringify({
+        app_key: this.options.app_key,
+        app_secret: this.options.app_secret,
+      }),
+    });
+
+    if ("errorMessage" in res) {
+      throw new Error(res.errorMessage);
+    }
+
+    return res.id_token;
   }
 }
 
-export class UnifyBkash {
-  constructor(private bkash: Bkash) {}
+export class UnifyBkash extends UnifyFetch {
+  constructor(private bkash: Bkash) {
+    super();
+  }
 
-  private async fetch() {}
+  async getCheckoutUrl(options: IBkashCheckoutOptions) {
+    const accessToken = await this.bkash.getAccessToken();
 
-  private async getAccessToken() {}
+    const [res] = await this.jsonFetch<
+      IBkashCheckoutResponse | IBkashErrorResponse
+    >(`${this.bkash.getApiBaseUrl()}/tokenized/checkout/create`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-App-Key": this.bkash.getAppKey(),
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(options),
+    });
 
-  async getCheckoutUrl() {}
+    if ("errorMessage" in res) {
+      throw new Error(res.errorMessage);
+    }
+
+    return res.bkashURL;
+  }
 }

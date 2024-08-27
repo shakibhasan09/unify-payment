@@ -3,6 +3,7 @@
   "version": "0.0.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "module": "dist/index.js",
   "keywords": [
     "starter",
     "kit",
@@ -23,8 +24,12 @@
   },
   "license": "ISC",
   "files": [
-    "dist"
+    "dist/index.js",
+    "dist/index.d.ts"
   ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "scripts": {
     "build": "npx tsc -b",
     "dev": "npx tsc -b -w"

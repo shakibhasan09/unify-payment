@@ -1,5 +1,7 @@
 import { CreateTransactionRequestBody, Paddle } from "@paddle/paddle-node-sdk";
 
+export { Paddle };
+
 export class UnifyPaddle {
   constructor(private paddle: Paddle) {}
 
