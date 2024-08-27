@@ -1,49 +1,36 @@
-import { CheckoutCreateParams } from "../types/lemonsqueezy";
 import {
-  LemonSqueezyWebhookEevent,
-  LemonSqueezyWebhookEvents,
-} from "../types/lemonsqueezy.hook";
+  ILemonSqueezyCheckoutOptions,
+  TGetCheckoutUrl,
+  TWebhookEventResponse,
+} from "../types/lemonsqueezy";
+import { UnifyFetch } from "../utils/fetch";
 
-export class LemonSqueezy {
-  constructor(private apiKey: string) {}
+export class LemonSqueezy extends UnifyFetch {
+  constructor(private apiKey: string) {
+    super();
+  }
 
-  getApiBaseUrl() {
+  private getApiBaseUrl() {
     return "https://api.lemonsqueezy.com/v1";
   }
 
-  getApiRequestHeaders() {
+  private getApiRequestHeaders() {
     return {
       Accept: "application/vnd.api+json",
       "Content-Type": "application/vnd.api+json",
       Authorization: `Bearer ${this.apiKey}`,
     };
   }
-}
 
-export class UnifyLemonSqueezy {
-  constructor(private lemonSqueezy: LemonSqueezy) {}
-
-  private async fetch(
-    path: string,
-    params?: { method?: string; headers?: HeadersInit; body?: BodyInit }
-  ) {
-    return await fetch(`${this.lemonSqueezy.getApiBaseUrl()}${path}`, {
-      method: params?.method || "GET",
-      headers: this.lemonSqueezy.getApiRequestHeaders(),
-      body: params?.body,
-    });
-  }
-
-  async getCheckoutUrl(body: CheckoutCreateParams) {
-    const req = await this.fetch("/checkouts", {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-
-    // TODO: handle parsing error
-    const res = (await req.json()) as
-      | { data: { attributes: { url: string } } }
-      | { errors: [{ detail: string }] };
+  async getCheckoutUrl(options: ILemonSqueezyCheckoutOptions) {
+    const [res] = await this.jsonFetch<TGetCheckoutUrl>(
+      `${this.getApiBaseUrl()}/checkouts`,
+      {
+        method: "POST",
+        body: JSON.stringify({ data: options }),
+        headers: this.getApiRequestHeaders(),
+      }
+    );
 
     if ("errors" in res) {
       throw new Error(res.errors[0].detail);
@@ -52,25 +39,12 @@ export class UnifyLemonSqueezy {
     return res.data.attributes.url;
   }
 
-  webhook = new UnifyLemonSqueezyWebhook(this.lemonSqueezy);
-}
-
-export type LemonSqueezyWebhookEventResponse =
-  | { error: Error }
-  | {
-      event: LemonSqueezyWebhookEevent;
-      type: LemonSqueezyWebhookEvents;
-    };
-
-export class UnifyLemonSqueezyWebhook {
-  constructor(private lemonsqueezy: LemonSqueezy) {}
-
   async verifySignature(payload: {
     signature: string;
     secret: string;
     body: string;
     x_event: string;
-  }): Promise<LemonSqueezyWebhookEventResponse> {
+  }): Promise<TWebhookEventResponse> {
     try {
       const encoder = new TextEncoder();
 
@@ -97,8 +71,8 @@ export class UnifyLemonSqueezyWebhook {
       }
 
       return {
-        event: JSON.parse(payload.body) as LemonSqueezyWebhookEevent,
-        type: payload.x_event as LemonSqueezyWebhookEvents,
+        event: JSON.parse(payload.body),
+        type: payload.x_event as any,
       };
     } catch (err) {
       return {

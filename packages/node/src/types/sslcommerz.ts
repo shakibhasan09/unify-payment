@@ -1,4 +1,4 @@
-export type SSLCommerzCreateCheckoutPayload =
+export type ISSLCommerzCreateCheckoutPayload =
   | {
       tran_id: string;
       store_id: string;
@@ -76,11 +76,18 @@ export type SSLCommerzCreateCheckoutPayload =
         | "telecom-vertical";
     };
 
-export interface SSLCommerzCheckoutResponse {
+export interface ISSLCommerzCheckoutResponse {
   status: "SUCCESS" | "FAILED";
   failedreason: string;
   sessionkey: string;
-  gw: Gw;
+  gw: {
+    visa: string;
+    master: string;
+    amex: string;
+    othercards: string;
+    internetbanking: string;
+    mobilebanking: string;
+  };
   redirectGatewayURL: string;
   directPaymentURLBank: string;
   directPaymentURLCard: string;
@@ -90,24 +97,20 @@ export interface SSLCommerzCheckoutResponse {
   storeBanner: string;
   storeLogo: string;
   store_name: string;
-  desc: Desc[];
+  desc: {
+    name: string;
+    type: string;
+    logo: string;
+    gw: string;
+    r_flag?: string;
+    redirectGatewayURL?: string;
+  }[];
   is_direct_pay_enable: string;
 }
 
-export interface Gw {
-  visa: string;
-  master: string;
-  amex: string;
-  othercards: string;
-  internetbanking: string;
-  mobilebanking: string;
-}
-
-export interface Desc {
-  name: string;
-  type: string;
-  logo: string;
-  gw: string;
-  r_flag?: string;
-  redirectGatewayURL?: string;
-}
+export type ISSLCommerzOptions = {
+  apiUrl: string;
+  store_id: string;
+  store_url?: string;
+  store_passwd: string;
+};

@@ -1,65 +1,47 @@
 import {
-  SSLCommerzCheckoutResponse,
-  SSLCommerzCreateCheckoutPayload,
+  ISSLCommerzCheckoutResponse,
+  ISSLCommerzCreateCheckoutPayload,
+  ISSLCommerzOptions,
 } from "../types/sslcommerz";
+import { UnifyFetch } from "../utils/fetch";
 
-export type SSLCommerzOptions = {
-  apiUrl: string;
-  store_id: string;
-  store_url?: string;
-  store_passwd: string;
-};
+export class SSLCommerz extends UnifyFetch {
+  constructor(private options: ISSLCommerzOptions) {
+    super();
+  }
 
-export class SSLCommerz {
-  constructor(private options: SSLCommerzOptions) {}
-
-  getApiBaseUrl() {
+  private getApiBaseUrl() {
     return this.options.apiUrl;
   }
 
-  getApiCheckoutUrl() {
+  private getApiCheckoutUrl() {
     return `${this.getApiBaseUrl()}/gwprocess/v4/api.php`;
   }
 
-  getApiValidationUrl() {
+  private getApiValidationUrl() {
     return `${this.getApiBaseUrl()}/validator/api/validationserverAPI.php`;
   }
 
-  getApiRefundUrl() {
+  private getApiRefundUrl() {
     return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
   }
 
-  getApiRefundQueryUrl() {
+  private getApiRefundQueryUrl() {
     return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
   }
 
-  getApiTransactionQueryBySessionIdUrl() {
+  private getApiTransactionQueryBySessionIdUrl() {
     return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
   }
 
-  getApiTransactionQueryByTransactionIdUrl() {
+  private getApiTransactionQueryByTransactionIdUrl() {
     return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
   }
 
-  getApiHeaders() {
+  private getApiHeaders() {
     return {
       "Content-Type": "application/x-www-form-urlencoded",
     };
-  }
-}
-
-export class UnifySSLCommerz {
-  constructor(private sslcommerz: SSLCommerz) {}
-
-  private async fetch(
-    url: string,
-    params?: { method?: string; headers?: HeadersInit; body?: BodyInit }
-  ) {
-    return await fetch(url, {
-      method: params?.method || "GET",
-      headers: this.sslcommerz.getApiHeaders(),
-      body: params?.body,
-    });
   }
 
   private urlFormEncode(payload: Record<string, string | number>) {
@@ -71,15 +53,15 @@ export class UnifySSLCommerz {
       .join("&");
   }
 
-  async getCheckoutUrl(payload: SSLCommerzCreateCheckoutPayload) {
-    const req = await this.fetch(this.sslcommerz.getApiCheckoutUrl(), {
-      method: "POST",
-      body: this.urlFormEncode(payload),
-      headers: this.sslcommerz.getApiHeaders(),
-    });
-
-    // TODO: handle parsing error
-    const res = (await req.json()) as SSLCommerzCheckoutResponse;
+  async getCheckoutUrl(payload: ISSLCommerzCreateCheckoutPayload) {
+    const [res] = await this.jsonFetch<ISSLCommerzCheckoutResponse>(
+      this.getApiCheckoutUrl(),
+      {
+        method: "POST",
+        body: this.urlFormEncode(payload),
+        headers: this.getApiHeaders(),
+      }
+    );
 
     if (res.status === "FAILED") {
       throw new Error(res.failedreason);
