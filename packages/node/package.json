@@ -1,9 +1,9 @@
 {
   "name": "@unify-payment/node",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "module": "dist/index.js",
+  "module": "dist/index.mjs",
   "keywords": [
     "starter",
     "kit",
@@ -24,7 +24,7 @@
   "license": "ISC",
   "scripts": {
     "build": "tsup",
-    "dev": "npx tsc -b -w"
+    "dev": "tsup --watch"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.7",
