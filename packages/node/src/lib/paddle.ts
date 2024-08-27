@@ -1,9 +1,19 @@
-import { CreateTransactionRequestBody, Paddle } from "@paddle/paddle-node-sdk";
+import {
+  CreateTransactionRequestBody,
+  Paddle as PaddleNodeSdk,
+  PaddleOptions,
+} from "@paddle/paddle-node-sdk";
+import { IPaddleWebhookEventResponse } from "../types/paddle";
 
-export { Paddle };
+export class Paddle {
+  private paddle: PaddleNodeSdk;
 
-export class UnifyPaddle {
-  constructor(private paddle: Paddle) {}
+  constructor(
+    private apiKey: string,
+    private options?: PaddleOptions
+  ) {
+    this.paddle = new PaddleNodeSdk(this.apiKey, this.options);
+  }
 
   async getCheckoutUrl(payload: CreateTransactionRequestBody) {
     const transaction = await this.paddle.transactions.create(payload);
@@ -15,17 +25,7 @@ export class UnifyPaddle {
     return transaction.checkout.url;
   }
 
-  webhook = new UnifyPaddleWebhook(this.paddle);
-}
-
-export class UnifyPaddleWebhook {
-  constructor(private paddle: Paddle) {}
-
-  async verifySignature(payload: {
-    signature: string;
-    secret: string;
-    body: string;
-  }) {
+  async verifySignature(payload: IPaddleWebhookEventResponse) {
     try {
       const event = this.paddle.webhooks.unmarshal(
         payload.body,
