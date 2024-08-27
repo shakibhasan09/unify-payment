@@ -128,22 +128,23 @@ export interface ILemonSqueezyWebhookEeventResponse {
 
 export interface ILemonSqueezyCheckoutOptions {
   type: "checkouts";
-  attributes: {
-    custom_price: number;
-    product_options: {
-      enabled_variants: number[];
+  attributes?: {
+    custom_price?: number;
+    product_options?: {
+      redirect_url?: string;
+      enabled_variants?: number[];
     };
-    checkout_options: {
+    checkout_options?: {
       button_color: string;
     };
-    checkout_data: {
-      discount_code: string;
-      custom: {
+    checkout_data?: {
+      discount_code?: string;
+      custom?: {
         user_id: number;
       };
     };
-    expires_at: string;
-    preview: boolean;
+    expires_at?: string;
+    preview?: boolean;
   };
   relationships: {
     store: {

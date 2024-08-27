@@ -23,11 +23,14 @@ export class LemonSqueezy extends UnifyFetch {
   }
 
   async getCheckoutUrl(options: ILemonSqueezyCheckoutOptions) {
-    const [res] = await this.jsonFetch<TGetCheckoutUrl>("/checkouts", {
-      method: "POST",
-      body: JSON.stringify(options),
-      headers: this.getApiRequestHeaders(),
-    });
+    const [res] = await this.jsonFetch<TGetCheckoutUrl>(
+      `${this.getApiBaseUrl()}/checkouts`,
+      {
+        method: "POST",
+        body: JSON.stringify({ data: options }),
+        headers: this.getApiRequestHeaders(),
+      }
+    );
 
     if ("errors" in res) {
       throw new Error(res.errors[0].detail);
