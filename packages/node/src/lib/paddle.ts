@@ -10,9 +10,9 @@ export class Paddle {
 
   constructor(
     private apiKey: string,
-    private options?: PaddleOptions
+    options: PaddleOptions
   ) {
-    this.paddle = new PaddleNodeSdk(this.apiKey, this.options);
+    this.paddle = new PaddleNodeSdk(this.apiKey, options);
   }
 
   async getCheckoutUrl(payload: CreateTransactionRequestBody) {
