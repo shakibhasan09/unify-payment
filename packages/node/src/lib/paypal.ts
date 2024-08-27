@@ -1,34 +1,32 @@
 import {
-  link,
-  paypalAuthResponse,
-  paypalOptions,
-  PayPalOrderResponse,
-  paypalPayload,
+  IPaypalAuthResponse,
+  IPaypalOptions,
+  IPayPalOrderResponse,
+  IPaypalPayload,
 } from "../types/paypal";
 import { UnifyFetch } from "../utils/fetch";
 
 export class Paypal extends UnifyFetch {
-  constructor(private options: paypalOptions) {
+  constructor(private options: IPaypalOptions) {
     super();
   }
 
-  getApiBaseUrl() {
+  private getApiBaseUrl() {
     if (this.options.sandbox) {
       return "https://api-m.sandbox.paypal.com";
     }
-
     return "https://api.paypal.com";
   }
 
-  getClientId() {
+  private getClientId() {
     return this.options.clientId;
   }
 
-  getClientSecret() {
+  private getClientSecret() {
     return this.options.clientSecret;
   }
 
-  getApiCheckoutUrl() {
+  private getApiCheckoutUrl() {
     return `${this.getApiBaseUrl()}/v2/checkout/orders`;
   }
 
@@ -37,7 +35,7 @@ export class Paypal extends UnifyFetch {
 
     const auth = btoa(`${this.getClientId()}:${this.getClientSecret()}`);
 
-    const [response] = await this.jsonFetch<paypalAuthResponse>(url, {
+    const [response] = await this.jsonFetch<IPaypalAuthResponse>(url, {
       method: "POST",
       headers: {
         Authorization: `Basic ${auth}`,
@@ -48,18 +46,12 @@ export class Paypal extends UnifyFetch {
 
     return response.access_token;
   }
-}
 
-export class UnifyPaypal extends UnifyFetch {
-  constructor(private paypal: Paypal) {
-    super();
-  }
+  async getCheckoutUrl(payload: IPaypalPayload) {
+    const accessToken = await this.getAccessToken();
 
-  async getCheckoutUrl(payload: paypalPayload) {
-    const accessToken = await this.paypal.getAccessToken();
-
-    const [res] = await this.jsonFetch<PayPalOrderResponse>(
-      this.paypal.getApiCheckoutUrl(),
+    const [res] = await this.jsonFetch<IPayPalOrderResponse>(
+      this.getApiCheckoutUrl(),
       {
         method: "POST",
         body: JSON.stringify(payload),
