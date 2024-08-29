@@ -13,7 +13,7 @@ export interface IBkashErrorResponse {
 }
 
 export interface IBkashCheckoutOptions {
-  code: "0011";
+  mode: "0011";
   payerReference: string;
   callbackURL: string;
   amount: string;
