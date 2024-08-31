@@ -36,11 +36,15 @@
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.7",
+    "@types/node-rsa": "^1.1.4",
     "tsup": "^8.2.4",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "@paddle/paddle-node-sdk": "^1.5.0",
+    "axios": "^1.7.6",
+    "dayjs": "^1.11.13",
+    "node-rsa": "^1.1.1",
     "stripe": "^16.8.0"
   }
 }
