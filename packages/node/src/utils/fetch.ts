@@ -17,8 +17,8 @@ export class UnifyFetch {
     return [res, req];
   }
 
-  async axios<T>(url: string, options?: TFetchOptions) {
-    const req = await axios<T>({
+  async axios<T>(url: string, options?: TFetchOptions): Promise<[T, Request]> {
+    const req = await axios({
       url,
       method: options?.method,
       headers: options?.headers,
