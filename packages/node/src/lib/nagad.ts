@@ -13,6 +13,7 @@ import {
   INagadSensitiveData,
 } from "../types/nagad";
 import crypto from "node:crypto";
+import NodeRSA from "node-rsa";
 
 export class Nagad extends UnifyFetch {
   constructor(private options: INagadOptions) {
@@ -72,8 +73,7 @@ export class Nagad extends UnifyFetch {
     const encrypted = crypto.publicEncrypt(
       {
         key: publicKey,
-        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-        oaepHash: "sha256",
+        padding: crypto.constants.RSA_PKCS1_PADDING,
       },
       Buffer.from(JSON.stringify(data), "utf8")
     );
@@ -84,16 +84,12 @@ export class Nagad extends UnifyFetch {
   private decrypt<T>(data: string): T {
     const privateKey = `-----BEGIN PRIVATE KEY-----\n${this.getPrivateKey()}\n-----END PRIVATE KEY-----`;
 
-    const decrypted = crypto
-      .privateDecrypt(
-        {
-          key: privateKey,
-          padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-          oaepHash: "sha256",
-        },
-        Buffer.from(data, "base64")
-      )
-      .toString();
+    const keyRSA = new NodeRSA(privateKey, "pkcs8", {
+      encryptionScheme: "pkcs1",
+    });
+    keyRSA.setOptions({ environment: "browser" });
+
+    const decrypted = keyRSA.decrypt(data).toString("utf8");
 
     return JSON.parse(decrypted);
   }
