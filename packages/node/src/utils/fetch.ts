@@ -1,6 +1,8 @@
+import axios from "axios";
+
 type TFetchOptions = {
   method?: string;
-  headers?: HeadersInit;
+  headers?: Record<string, string>;
   body?: BodyInit;
 };
 
@@ -15,5 +17,12 @@ export class UnifyFetch {
     return [res, req];
   }
 
-  async axios<T>(url: string, options?: TFetchOptions) {}
+  async axios<T>(url: string, options?: TFetchOptions) {
+    const req = await axios({
+      url,
+      method: options?.method,
+      headers: options?.headers,
+      data: options?.body,
+    });
+  }
 }
