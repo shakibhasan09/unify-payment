@@ -18,6 +18,28 @@ importers:
         specifier: ^5.4.5
         version: 5.4.5
 
+  apps/my-node:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^1.12.2
+        version: 1.12.2(hono@4.5.10)
+      '@unify-payment/node':
+        specifier: workspace:*
+        version: link:../../packages/node
+      hono:
+        specifier: ^4.5.10
+        version: 4.5.10
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.17
+        version: 20.12.14
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      tsx:
+        specifier: ^4.7.1
+        version: 4.19.0
+
   packages/node:
     dependencies:
       '@paddle/paddle-node-sdk':
@@ -29,6 +51,9 @@ importers:
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
+      node-rsa:
+        specifier: ^1.1.1
+        version: 1.1.1
       stripe:
         specifier: ^16.8.0
         version: 16.8.0
@@ -36,6 +61,9 @@ importers:
       '@tsconfig/recommended':
         specifier: ^1.0.7
         version: 1.0.7
+      '@types/node-rsa':
+        specifier: ^1.1.4
+        version: 1.1.4
       tsup:
         specifier: ^8.2.4
         version: 8.2.4(@swc/core@1.7.18)(postcss@8.4.41)(tsx@4.19.0)(typescript@5.4.5)
@@ -188,6 +216,12 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@hono/node-server@1.12.2':
+    resolution: {integrity: sha512-xjzhqhSWUE/OhN0g3KCNVzNsQMlFUAL+/8GgPUr3TKcU7cvgZVBGswFofJ8WwGEHTqobzze1lDpGJl9ZNckDhA==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -391,6 +425,9 @@ packages:
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
 
+  '@types/node-rsa@1.1.4':
+    resolution: {integrity: sha512-dB0ECel6JpMnq5ULvpUTunx3yNm8e/dIkv8Zu9p2c8me70xIRUUG3q+qXRwcSf9rN3oqamv4116iHy90dJGRpA==}
+
   '@types/node@20.12.14':
     resolution: {integrity: sha512-scnD59RpYD91xngrQQLGkE+6UrHUPzeKZWhhjBSa3HSkwjbQc38+q3RoIVEwxQGRw3M+j5hpNAM+lgV3cVormg==}
 
@@ -420,6 +457,9 @@ packages:
   array-union@2.1.0:
     resolution: {integrity: sha512-HGyxoOTYUyCM6stUe6EJgnd4EoewAI7zMdfqO+kGjnlZmBDz/cR5pf8r/cR4Wq60sL/p0IkcjUEEPwS3GFrIyw==}
     engines: {node: '>=8'}
+
+  asn1@0.2.6:
+    resolution: {integrity: sha512-ix/FxPn0MDjeyJ7i/yoHGFt/EX6LyNbxSEhPPXODPL+KB0VPk86UYfL0lMdy+KCnv+fmvIzySwaK5COwqVbWTQ==}
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
@@ -505,6 +545,10 @@ packages:
   dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
+
+  dotenv@16.4.5:
+    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
+    engines: {node: '>=12'}
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
@@ -608,6 +652,10 @@ packages:
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
+
+  hono@4.5.10:
+    resolution: {integrity: sha512-az6tdU1U8o/l0v8O37FIQuc+ER/TeD9vHt/qs8JnBDgMxw6Zu5L2AixUyHeXZNcu87r7iYo8Ey85R7IogOINKA==}
+    engines: {node: '>=16.0.0'}
 
   human-signals@2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
@@ -722,6 +770,9 @@ packages:
       encoding:
         optional: true
 
+  node-rsa@1.1.1:
+    resolution: {integrity: sha512-Jd4cvbJMryN21r5HgxQOpMEqv+ooke/korixNNK3mGqfGJmy0M77WDDzo/05969+OkMy3XW1UuZsSmW9KQm7Fw==}
+
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
@@ -831,6 +882,9 @@ packages:
 
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
+
+  safer-buffer@2.1.2:
+    resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
   set-function-length@1.2.2:
     resolution: {integrity: sha512-pgRc4hJ4/sNjWCSS9AmnS40x3bNMDTknHgL5UaMBTMyJnU90EgWh1Rz+MC9eFu4BuN/UwZjKQuY/1v3rM7HMfg==}
@@ -1085,6 +1139,10 @@ snapshots:
   '@esbuild/win32-x64@0.23.1':
     optional: true
 
+  '@hono/node-server@1.12.2(hono@4.5.10)':
+    dependencies:
+      hono: 4.5.10
+
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
@@ -1240,6 +1298,10 @@ snapshots:
 
   '@types/estree@1.0.5': {}
 
+  '@types/node-rsa@1.1.4':
+    dependencies:
+      '@types/node': 20.12.14
+
   '@types/node@20.12.14':
     dependencies:
       undici-types: 5.26.5
@@ -1262,6 +1324,10 @@ snapshots:
       picomatch: 2.3.1
 
   array-union@2.1.0: {}
+
+  asn1@0.2.6:
+    dependencies:
+      safer-buffer: 2.1.2
 
   asynckit@0.4.0: {}
 
@@ -1349,6 +1415,8 @@ snapshots:
   dir-glob@3.0.1:
     dependencies:
       path-type: 4.0.0
+
+  dotenv@16.4.5: {}
 
   eastasianwidth@0.2.0: {}
 
@@ -1448,7 +1516,6 @@ snapshots:
   get-tsconfig@4.8.0:
     dependencies:
       resolve-pkg-maps: 1.0.0
-    optional: true
 
   glob-parent@5.1.2:
     dependencies:
@@ -1487,6 +1554,8 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
+
+  hono@4.5.10: {}
 
   human-signals@2.1.0: {}
 
@@ -1568,6 +1637,10 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
+  node-rsa@1.1.1:
+    dependencies:
+      asn1: 0.2.6
+
   normalize-path@3.0.0: {}
 
   npm-run-path@4.0.1:
@@ -1631,8 +1704,7 @@ snapshots:
 
   resolve-from@5.0.0: {}
 
-  resolve-pkg-maps@1.0.0:
-    optional: true
+  resolve-pkg-maps@1.0.0: {}
 
   reusify@1.0.4: {}
 
@@ -1661,6 +1733,8 @@ snapshots:
   run-parallel@1.2.0:
     dependencies:
       queue-microtask: 1.2.3
+
+  safer-buffer@2.1.2: {}
 
   set-function-length@1.2.2:
     dependencies:
@@ -1790,7 +1864,6 @@ snapshots:
       get-tsconfig: 4.8.0
     optionalDependencies:
       fsevents: 2.3.3
-    optional: true
 
   turbo-darwin-64@2.0.14:
     optional: true
