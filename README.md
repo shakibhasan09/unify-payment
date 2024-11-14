@@ -17,9 +17,7 @@ UnifyPayment is a TypeScript package that provides a unified interface for integ
 - **PayPal:** (Checkout) will add more functionality later.
 - **Bkash:** (Checkout) will add more functionality later.
 - **Nagad:** (Checkout) will add more functionality later.
-- **RazorPay:** (upcoming).
-- **Shopify:** (upcoming).
-- **GooglePay:** (planing).
+- **RazorPay:** (Contribution are welcomed)
 
 ## Installation
 
