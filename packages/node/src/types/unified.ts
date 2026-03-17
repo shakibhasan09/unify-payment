@@ -65,6 +65,11 @@ export type PaddleConfig = {
   sandbox?: boolean;
 };
 
+export type CoinbaseConfig = {
+  provider: "coinbase";
+  apiKey: string;
+};
+
 export type PaymentConfig =
   | StripeConfig
   | PaypalConfig
@@ -74,7 +79,8 @@ export type PaymentConfig =
   | NagadConfig
   | PolarConfig
   | RazorpayConfig
-  | PaddleConfig;
+  | PaddleConfig
+  | CoinbaseConfig;
 
 // --- Unified checkout session params ---
 
@@ -159,6 +165,13 @@ export interface PaddleCheckoutSessionParams extends CreateCheckoutSessionParams
   customData?: Record<string, string>;
 }
 
+export interface CoinbaseCheckoutSessionParams extends CreateCheckoutSessionParams {
+  provider?: "coinbase";
+  name?: string;
+  description?: string;
+  metadata?: Record<string, string>;
+}
+
 export interface PolarCheckoutSessionParams extends CreateCheckoutSessionParams {
   provider?: "polar";
   productId: string;
@@ -207,6 +220,7 @@ export type CheckoutParamsForConfig<T extends PaymentConfig> =
   T extends PolarConfig ? PolarCheckoutSessionParams :
   T extends RazorpayConfig ? RazorpayCheckoutSessionParams :
   T extends PaddleConfig ? PaddleCheckoutSessionParams :
+  T extends CoinbaseConfig ? CoinbaseCheckoutSessionParams :
   CreateCheckoutSessionParams;
 
 export interface PaymentInstance<T extends PaymentConfig = PaymentConfig> {

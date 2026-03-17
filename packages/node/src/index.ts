@@ -7,6 +7,7 @@ import { Razorpay } from "./lib/razorpay";
 import { Paddle } from "./lib/paddle";
 import { SSLCommerz } from "./lib/sslcommerz";
 import { Stripe } from "./lib/stripe";
+import { Coinbase } from "./lib/coinbase";
 import { createPayment } from "./unified";
 
 const UnifyPayment = {
@@ -19,6 +20,7 @@ const UnifyPayment = {
   SSLCommerz,
   Stripe,
   Nagad,
+  Coinbase,
 };
 
 export { UnifyPayment, createPayment };
@@ -37,6 +39,7 @@ export type {
   PolarConfig,
   RazorpayConfig,
   PaddleConfig,
+  CoinbaseConfig,
   StripeCheckoutSessionParams,
   PaypalCheckoutSessionParams,
   LemonSqueezyCheckoutSessionParams,
@@ -46,6 +49,7 @@ export type {
   PolarCheckoutSessionParams,
   RazorpayCheckoutSessionParams,
   PaddleCheckoutSessionParams,
+  CoinbaseCheckoutSessionParams,
   VerifyWebhookParams,
   WebhookEvent,
 } from "./types/unified";

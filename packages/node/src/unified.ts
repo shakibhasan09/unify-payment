@@ -8,6 +8,7 @@ import { Nagad } from "./lib/nagad";
 import { Polar } from "./lib/polar";
 import { Razorpay } from "./lib/razorpay";
 import { Paddle } from "./lib/paddle";
+import { Coinbase } from "./lib/coinbase";
 import type {
   PaymentConfig,
   PaymentInstance,
@@ -21,6 +22,7 @@ import type {
   PolarConfig,
   RazorpayConfig,
   PaddleConfig,
+  CoinbaseConfig,
   StripeCheckoutSessionParams,
   PaypalCheckoutSessionParams,
   LemonSqueezyCheckoutSessionParams,
@@ -30,6 +32,7 @@ import type {
   PolarCheckoutSessionParams,
   RazorpayCheckoutSessionParams,
   PaddleCheckoutSessionParams,
+  CoinbaseCheckoutSessionParams,
   VerifyWebhookParams,
   WebhookEvent,
 } from "./types/unified";
@@ -431,6 +434,58 @@ function createPaddlePayment(
   };
 }
 
+function createCoinbasePayment(
+  config: CoinbaseConfig
+): PaymentInstance<CoinbaseConfig> {
+  const coinbase = new Coinbase({
+    apiKey: config.apiKey,
+  });
+
+  return {
+    async createCheckoutSession(
+      params: CoinbaseCheckoutSessionParams
+    ): Promise<CheckoutSession> {
+      const amountStr = (params.amount / 100).toFixed(2);
+
+      const result = await coinbase.createCharge({
+        name: params.name || "Payment",
+        description: params.description || "Payment",
+        pricing_type: "fixed_price",
+        local_price: {
+          amount: amountStr,
+          currency: params.currency.toUpperCase(),
+        },
+        redirect_url: params.successUrl,
+        cancel_url: params.cancelUrl,
+        metadata: params.metadata,
+      });
+
+      return {
+        url: result.url,
+        sessionId: result.code,
+      };
+    },
+
+    async verifyWebhook(params: VerifyWebhookParams): Promise<WebhookEvent> {
+      const result = await coinbase.verifySignature({
+        body: params.body,
+        signature: params.signature,
+        secret: params.secret,
+      });
+
+      if ("error" in result) {
+        throw result.error;
+      }
+
+      return {
+        type: result.type,
+        data: result.event,
+        raw: result.event,
+      };
+    },
+  };
+}
+
 export function createPayment<T extends PaymentConfig>(config: T): PaymentInstance<T> {
   switch (config.provider) {
     case "stripe":
@@ -451,6 +506,8 @@ export function createPayment<T extends PaymentConfig>(config: T): PaymentInstan
       return createRazorpayPayment(config) as PaymentInstance<T>;
     case "paddle":
       return createPaddlePayment(config) as PaymentInstance<T>;
+    case "coinbase":
+      return createCoinbasePayment(config) as PaymentInstance<T>;
     default:
       throw new Error(`Unsupported payment provider: ${(config as any).provider}`);
   }
