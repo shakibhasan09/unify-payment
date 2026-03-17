@@ -7,6 +7,7 @@ import { SSLCommerz } from "./lib/sslcommerz";
 import { Nagad } from "./lib/nagad";
 import { Polar } from "./lib/polar";
 import { Razorpay } from "./lib/razorpay";
+import { Paddle } from "./lib/paddle";
 import type {
   PaymentConfig,
   PaymentInstance,
@@ -19,6 +20,7 @@ import type {
   NagadConfig,
   PolarConfig,
   RazorpayConfig,
+  PaddleConfig,
   StripeCheckoutSessionParams,
   PaypalCheckoutSessionParams,
   LemonSqueezyCheckoutSessionParams,
@@ -27,6 +29,7 @@ import type {
   NagadCheckoutSessionParams,
   PolarCheckoutSessionParams,
   RazorpayCheckoutSessionParams,
+  PaddleCheckoutSessionParams,
   VerifyWebhookParams,
   WebhookEvent,
 } from "./types/unified";
@@ -384,6 +387,50 @@ function createRazorpayPayment(
   };
 }
 
+function createPaddlePayment(
+  config: PaddleConfig
+): PaymentInstance<PaddleConfig> {
+  const paddle = new Paddle({
+    apiKey: config.apiKey,
+    sandbox: config.sandbox,
+  });
+
+  return {
+    async createCheckoutSession(
+      params: PaddleCheckoutSessionParams
+    ): Promise<CheckoutSession> {
+      const result = await paddle.createTransaction({
+        items: [{ priceId: params.priceId, quantity: params.quantity ?? 1 }],
+        customerId: params.customerId,
+        customData: params.customData,
+      });
+
+      return {
+        url: result.url,
+        sessionId: result.id,
+      };
+    },
+
+    async verifyWebhook(params: VerifyWebhookParams): Promise<WebhookEvent> {
+      const result = await paddle.verifySignature({
+        body: params.body,
+        secret: params.secret,
+        signature: params.signature,
+      });
+
+      if ("error" in result) {
+        throw result.error;
+      }
+
+      return {
+        type: result.type,
+        data: result.event,
+        raw: result.event,
+      };
+    },
+  };
+}
+
 export function createPayment<T extends PaymentConfig>(config: T): PaymentInstance<T> {
   switch (config.provider) {
     case "stripe":
@@ -402,6 +449,8 @@ export function createPayment<T extends PaymentConfig>(config: T): PaymentInstan
       return createPolarPayment(config) as PaymentInstance<T>;
     case "razorpay":
       return createRazorpayPayment(config) as PaymentInstance<T>;
+    case "paddle":
+      return createPaddlePayment(config) as PaymentInstance<T>;
     default:
       throw new Error(`Unsupported payment provider: ${(config as any).provider}`);
   }

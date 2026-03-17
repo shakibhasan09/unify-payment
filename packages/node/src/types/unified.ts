@@ -59,6 +59,12 @@ export type RazorpayConfig = {
   keySecret: string;
 };
 
+export type PaddleConfig = {
+  provider: "paddle";
+  apiKey: string;
+  sandbox?: boolean;
+};
+
 export type PaymentConfig =
   | StripeConfig
   | PaypalConfig
@@ -67,7 +73,8 @@ export type PaymentConfig =
   | SSLCommerzConfig
   | NagadConfig
   | PolarConfig
-  | RazorpayConfig;
+  | RazorpayConfig
+  | PaddleConfig;
 
 // --- Unified checkout session params ---
 
@@ -144,6 +151,14 @@ export interface RazorpayCheckoutSessionParams extends CreateCheckoutSessionPara
   notes?: Record<string, string>;
 }
 
+export interface PaddleCheckoutSessionParams extends CreateCheckoutSessionParams {
+  provider?: "paddle";
+  priceId: string;
+  quantity?: number;
+  customerId?: string;
+  customData?: Record<string, string>;
+}
+
 export interface PolarCheckoutSessionParams extends CreateCheckoutSessionParams {
   provider?: "polar";
   productId: string;
@@ -191,6 +206,7 @@ export type CheckoutParamsForConfig<T extends PaymentConfig> =
   T extends NagadConfig ? NagadCheckoutSessionParams :
   T extends PolarConfig ? PolarCheckoutSessionParams :
   T extends RazorpayConfig ? RazorpayCheckoutSessionParams :
+  T extends PaddleConfig ? PaddleCheckoutSessionParams :
   CreateCheckoutSessionParams;
 
 export interface PaymentInstance<T extends PaymentConfig = PaymentConfig> {

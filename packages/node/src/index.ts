@@ -4,6 +4,7 @@ import { Nagad } from "./lib/nagad";
 import { Paypal } from "./lib/paypal";
 import { Polar } from "./lib/polar";
 import { Razorpay } from "./lib/razorpay";
+import { Paddle } from "./lib/paddle";
 import { SSLCommerz } from "./lib/sslcommerz";
 import { Stripe } from "./lib/stripe";
 import { createPayment } from "./unified";
@@ -14,6 +15,7 @@ const UnifyPayment = {
   Paypal,
   Polar,
   Razorpay,
+  Paddle,
   SSLCommerz,
   Stripe,
   Nagad,
@@ -34,6 +36,7 @@ export type {
   NagadConfig,
   PolarConfig,
   RazorpayConfig,
+  PaddleConfig,
   StripeCheckoutSessionParams,
   PaypalCheckoutSessionParams,
   LemonSqueezyCheckoutSessionParams,
@@ -42,6 +45,7 @@ export type {
   NagadCheckoutSessionParams,
   PolarCheckoutSessionParams,
   RazorpayCheckoutSessionParams,
+  PaddleCheckoutSessionParams,
   VerifyWebhookParams,
   WebhookEvent,
 } from "./types/unified";
