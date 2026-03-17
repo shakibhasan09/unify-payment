@@ -5,6 +5,7 @@ import { LemonSqueezy } from "./lib/lemonsqueezy";
 import { Bkash } from "./lib/bkash";
 import { SSLCommerz } from "./lib/sslcommerz";
 import { Nagad } from "./lib/nagad";
+import { Polar } from "./lib/polar";
 import type {
   PaymentConfig,
   PaymentInstance,
@@ -15,12 +16,14 @@ import type {
   BkashConfig,
   SSLCommerzConfig,
   NagadConfig,
+  PolarConfig,
   StripeCheckoutSessionParams,
   PaypalCheckoutSessionParams,
   LemonSqueezyCheckoutSessionParams,
   BkashCheckoutSessionParams,
   SSLCommerzCheckoutSessionParams,
   NagadCheckoutSessionParams,
+  PolarCheckoutSessionParams,
   VerifyWebhookParams,
   WebhookEvent,
 } from "./types/unified";
@@ -280,6 +283,54 @@ function createNagadPayment(config: NagadConfig): PaymentInstance<NagadConfig> {
   };
 }
 
+function createPolarPayment(config: PolarConfig): PaymentInstance<PolarConfig> {
+  const polar = new Polar({
+    accessToken: config.accessToken,
+    sandbox: config.sandbox,
+  });
+
+  return {
+    async createCheckoutSession(
+      params: PolarCheckoutSessionParams
+    ): Promise<CheckoutSession> {
+      const url = await polar.getCheckoutUrl({
+        products: [
+          { product_id: params.productId, quantity: params.quantity },
+        ],
+        success_url: params.successUrl,
+        customer_email: params.customerEmail,
+        customer_name: params.customerName,
+        customer_external_id: params.customerExternalId,
+        metadata: params.metadata,
+        discount_id: params.discountId,
+        allow_discount_codes: params.allowDiscountCodes,
+      });
+
+      return { url };
+    },
+
+    async verifyWebhook(params: VerifyWebhookParams): Promise<WebhookEvent> {
+      const result = await polar.verifySignature({
+        body: params.body,
+        signature: params.signature,
+        secret: params.secret,
+        webhookId: params.webhookId || "",
+        timestamp: params.timestamp || "",
+      });
+
+      if ("error" in result) {
+        throw result.error;
+      }
+
+      return {
+        type: result.type,
+        data: result.event,
+        raw: result.event,
+      };
+    },
+  };
+}
+
 export function createPayment<T extends PaymentConfig>(config: T): PaymentInstance<T> {
   switch (config.provider) {
     case "stripe":
@@ -294,6 +345,8 @@ export function createPayment<T extends PaymentConfig>(config: T): PaymentInstan
       return createSSLCommerzPayment(config) as PaymentInstance<T>;
     case "nagad":
       return createNagadPayment(config) as PaymentInstance<T>;
+    case "polar":
+      return createPolarPayment(config) as PaymentInstance<T>;
     default:
       throw new Error(`Unsupported payment provider: ${(config as any).provider}`);
   }

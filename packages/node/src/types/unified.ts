@@ -47,13 +47,20 @@ export type NagadConfig = {
   isLive?: boolean;
 };
 
+export type PolarConfig = {
+  provider: "polar";
+  accessToken: string;
+  sandbox?: boolean;
+};
+
 export type PaymentConfig =
   | StripeConfig
   | PaypalConfig
   | LemonSqueezyConfig
   | BkashConfig
   | SSLCommerzConfig
-  | NagadConfig;
+  | NagadConfig
+  | PolarConfig;
 
 // --- Unified checkout session params ---
 
@@ -121,6 +128,18 @@ export interface NagadCheckoutSessionParams extends CreateCheckoutSessionParams 
   productDetails?: Record<string, string>;
 }
 
+export interface PolarCheckoutSessionParams extends CreateCheckoutSessionParams {
+  provider?: "polar";
+  productId: string;
+  quantity?: number;
+  customerEmail?: string;
+  customerName?: string;
+  customerExternalId?: string;
+  metadata?: Record<string, string>;
+  discountId?: string;
+  allowDiscountCodes?: boolean;
+}
+
 // --- Checkout session result ---
 
 export interface CheckoutSession {
@@ -135,6 +154,8 @@ export interface VerifyWebhookParams {
   body: string;
   signature: string;
   secret: string;
+  webhookId?: string;
+  timestamp?: string;
 }
 
 export interface WebhookEvent {
@@ -152,6 +173,7 @@ export type CheckoutParamsForConfig<T extends PaymentConfig> =
   T extends BkashConfig ? BkashCheckoutSessionParams :
   T extends SSLCommerzConfig ? SSLCommerzCheckoutSessionParams :
   T extends NagadConfig ? NagadCheckoutSessionParams :
+  T extends PolarConfig ? PolarCheckoutSessionParams :
   CreateCheckoutSessionParams;
 
 export interface PaymentInstance<T extends PaymentConfig = PaymentConfig> {
