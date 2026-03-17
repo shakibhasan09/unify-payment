@@ -11,13 +11,18 @@ UnifyPayment is a TypeScript package that provides a unified interface for integ
 
 ## Providers
 
-- **Stripe:** (Checkout, Webhook) will add more functionality later.
-- **LemonSqueezy:** (Checkout, Webhook) will add more functionality later.
-- **SSLCommerz:** (Checkout) will add more functionality later.
-- **PayPal:** (Checkout) will add more functionality later.
-- **Bkash:** (Checkout) will add more functionality later.
-- **Nagad:** (Checkout) will add more functionality later.
-- **RazorPay:** (Contribution are welcomed)
+| Provider | Checkout | Verify Webhook | Tested Checkout | Tested Webhook |
+| --- | --- | --- | --- | --- |
+| Stripe | Yes | Yes | :white_check_mark: | :white_check_mark: |
+| LemonSqueezy | Yes | Yes | :white_check_mark: | :white_check_mark: |
+| SSLCommerz | Yes | No | :x: | :x: |
+| PayPal | Yes | No | :x: | :x: |
+| Bkash | Yes | No | :x: | :x: |
+| Nagad | Yes | No | :x: | :x: |
+| Razorpay | Yes | Yes | :x: | :x: |
+| Polar | Yes | Yes | :x: | :x: |
+| Paddle | Yes | Yes | :x: | :x: |
+| Coinbase | Yes | Yes | :x: | :x: |
 
 ## Installation
 
@@ -30,74 +35,228 @@ npm install @unify-payment/node
 ## Usage
 
 ```typescript
-// Stripe
-const stripe = new UnifyPayment.Stripe(process.env.STRIPE_SECRET_KEY!);
-const redirect = await stripe.getCheckoutUrl(stripePayload);
-
-// LemonSqueezy
-const lemon = new UnifyPayment.LemonSqueezy(process.env.LEMON_SECRET_KEY!);
-const redirect = await lemon.getCheckoutUrl(lemonsqueezyPayload);
-
-// Paypal
-const paypal = new UnifyPayment.Paypal(process.env.PAYPAL_SECRET_KEY!);
-const redirect = await paypal.getCheckoutUrl(lemonsqueezyPayload);
-
-// SSLCommerz
-const ssl = new UnifyPayment.SSLCommerz({
-  apiUrl: process.env.SSLCOMMERZ_API_URL!,
-  store_id: process.env.SSLCOMMERZ_STORE_ID!,
-  store_passwd: process.env.SSLCOMMERZ_SECRET_KEY!,
-});
-const redirect = await ssl.getCheckoutUrl(sslCommerzPayload);
+import { createPayment } from "@unify-payment/node";
 ```
 
-## Webhook
+### Stripe
 
 ```typescript
-// Stripe
-const stripe = new UnifyPayment.Stripe(process.env.STRIPE_SECRET_KEY!);
-
-const sign = c.req.header("Stripe-Signature");
-if (!sign) throw new Error("No Signature");
-
-const webhookEvent = await stripe.verifySignature({
-  signature: sign,
-  secret: "PUT YOUR WEBHOOK SECRET HERE",
-  body: await c.req.text(),
+const payment = createPayment({
+  provider: "stripe",
+  apiKey: process.env.STRIPE_SECRET_KEY!,
 });
 
-if ("error" in webhookEvent) throw new Error(webhookEvent.error.message);
+const { url } = await payment.createCheckoutSession({
+  amount: 2999,
+  currency: "usd",
+  successUrl: "https://example.com/success",
+  cancelUrl: "https://example.com/cancel",
+  productName: "Pro Plan",
+});
+```
 
-switch (webhookEvent.event.type) {
-  case "checkout.session.async_payment_succeeded":
-    break;
+### LemonSqueezy
 
-  default:
-    break;
-}
-
-// LemonSqueezy
-const lemon = new UnifyPayment.LemonSqueezy(process.env.LEMON_SECRET_KEY!);
-
-const sign = c.req.header("X-Signature");
-if (!sign) throw new Error("No Signature");
-
-const webhookEvent = await lemon.verifySignature({
-  signature: sign,
-  secret: "PUT YOUR WEBHOOK SECRET HERE",
-  body: await c.req.text(),
-  x_event: c.req.header("X-Event-Name")!,
+```typescript
+const payment = createPayment({
+  provider: "lemonsqueezy",
+  apiKey: process.env.LEMON_SECRET_KEY!,
 });
 
-if ("error" in webhookEvent) throw new Error(webhookEvent.error.message);
+const { url } = await payment.createCheckoutSession({
+  amount: 2999,
+  currency: "usd",
+  successUrl: "https://example.com/success",
+  cancelUrl: "https://example.com/cancel",
+  storeId: "your-store-id",
+  variantId: "your-variant-id",
+});
+```
 
-switch (webhookEvent.type) {
-  case "order_refunded":
-    break;
+### PayPal
 
-  default:
-    break;
-}
+```typescript
+const payment = createPayment({
+  provider: "paypal",
+  clientId: process.env.PAYPAL_CLIENT_ID!,
+  clientSecret: process.env.PAYPAL_CLIENT_SECRET!,
+  sandbox: true,
+});
+
+const { url } = await payment.createCheckoutSession({
+  amount: 2999,
+  currency: "usd",
+  successUrl: "https://example.com/success",
+  cancelUrl: "https://example.com/cancel",
+  description: "Pro Plan",
+});
+```
+
+### Paddle
+
+```typescript
+const payment = createPayment({
+  provider: "paddle",
+  apiKey: process.env.PADDLE_API_KEY!,
+  sandbox: true,
+});
+
+const { url } = await payment.createCheckoutSession({
+  priceId: "pri_xxxxx",
+  amount: 2999,
+  currency: "usd",
+  successUrl: "https://example.com/success",
+  cancelUrl: "https://example.com/cancel",
+});
+```
+
+### Polar
+
+```typescript
+const payment = createPayment({
+  provider: "polar",
+  accessToken: process.env.POLAR_ACCESS_TOKEN!,
+  sandbox: true,
+});
+
+const { url } = await payment.createCheckoutSession({
+  productId: "your-product-id",
+  amount: 2999,
+  currency: "usd",
+  successUrl: "https://example.com/success",
+  cancelUrl: "https://example.com/cancel",
+});
+```
+
+### Coinbase
+
+```typescript
+const payment = createPayment({
+  provider: "coinbase",
+  apiKey: process.env.COINBASE_API_KEY!,
+});
+
+const { url } = await payment.createCheckoutSession({
+  amount: 2999,
+  currency: "usd",
+  successUrl: "https://example.com/success",
+  cancelUrl: "https://example.com/cancel",
+  name: "Pro Plan",
+  description: "Monthly subscription",
+});
+```
+
+### Razorpay
+
+```typescript
+const payment = createPayment({
+  provider: "razorpay",
+  keyId: process.env.RAZORPAY_KEY_ID!,
+  keySecret: process.env.RAZORPAY_KEY_SECRET!,
+});
+
+const { url } = await payment.createCheckoutSession({
+  amount: 2999,
+  currency: "inr",
+  successUrl: "https://example.com/success",
+  cancelUrl: "https://example.com/cancel",
+  description: "Pro Plan",
+});
+```
+
+### SSLCommerz
+
+```typescript
+const payment = createPayment({
+  provider: "sslcommerz",
+  apiUrl: process.env.SSLCOMMERZ_API_URL!,
+  storeId: process.env.SSLCOMMERZ_STORE_ID!,
+  storePassword: process.env.SSLCOMMERZ_SECRET_KEY!,
+});
+
+const { url } = await payment.createCheckoutSession({
+  amount: 2999,
+  currency: "usd",
+  successUrl: "https://example.com/success",
+  cancelUrl: "https://example.com/cancel",
+  transactionId: "txn_123",
+  customerName: "John Doe",
+  customerEmail: "john@example.com",
+  customerAddress: "123 Main St",
+  customerCity: "Dhaka",
+  customerState: "Dhaka",
+  customerPostcode: "1000",
+  customerCountry: "Bangladesh",
+  customerPhone: "01700000000",
+  productName: "Pro Plan",
+  productCategory: "SaaS",
+});
+```
+
+### Bkash
+
+```typescript
+const payment = createPayment({
+  provider: "bkash",
+  apiUrl: process.env.BKASH_API_URL!,
+  username: process.env.BKASH_USERNAME!,
+  password: process.env.BKASH_PASSWORD!,
+  appKey: process.env.BKASH_APP_KEY!,
+  appSecret: process.env.BKASH_APP_SECRET!,
+});
+
+const { url } = await payment.createCheckoutSession({
+  amount: 500,
+  currency: "BDT",
+  successUrl: "https://example.com/success",
+  cancelUrl: "https://example.com/cancel",
+  payerReference: "01700000000",
+  merchantInvoiceNumber: "INV-123",
+});
+```
+
+### Nagad
+
+```typescript
+const payment = createPayment({
+  provider: "nagad",
+  merchantId: process.env.NAGAD_MERCHANT_ID!,
+  merchantNumber: process.env.NAGAD_MERCHANT_NUMBER!,
+  privateKey: process.env.NAGAD_PRIVATE_KEY!,
+  publicKey: process.env.NAGAD_PUBLIC_KEY!,
+  callbackUrl: "https://example.com/callback",
+  apiVersion: "v1",
+  isLive: false,
+});
+
+const { url } = await payment.createCheckoutSession({
+  amount: 500,
+  currency: "BDT",
+  successUrl: "https://example.com/success",
+  cancelUrl: "https://example.com/cancel",
+  orderId: "order_123",
+  ip: "127.0.0.1",
+});
+```
+
+## Webhook Verification
+
+Providers that support webhook verification: **Stripe**, **LemonSqueezy**, **Razorpay**, **Polar**, **Paddle**, **Coinbase**.
+
+```typescript
+const payment = createPayment({
+  provider: "stripe",
+  apiKey: process.env.STRIPE_SECRET_KEY!,
+});
+
+const webhookEvent = await payment.verifyWebhook!({
+  body: await c.req.text(),
+  signature: c.req.header("Stripe-Signature")!,
+  secret: process.env.STRIPE_WEBHOOK_SECRET!,
+});
+
+console.log(webhookEvent.type); // e.g. "checkout.session.completed"
+console.log(webhookEvent.data); // event payload
 ```
 
 ## Contributing
