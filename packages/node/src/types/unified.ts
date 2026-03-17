@@ -53,6 +53,12 @@ export type PolarConfig = {
   sandbox?: boolean;
 };
 
+export type RazorpayConfig = {
+  provider: "razorpay";
+  keyId: string;
+  keySecret: string;
+};
+
 export type PaymentConfig =
   | StripeConfig
   | PaypalConfig
@@ -60,7 +66,8 @@ export type PaymentConfig =
   | BkashConfig
   | SSLCommerzConfig
   | NagadConfig
-  | PolarConfig;
+  | PolarConfig
+  | RazorpayConfig;
 
 // --- Unified checkout session params ---
 
@@ -128,6 +135,15 @@ export interface NagadCheckoutSessionParams extends CreateCheckoutSessionParams 
   productDetails?: Record<string, string>;
 }
 
+export interface RazorpayCheckoutSessionParams extends CreateCheckoutSessionParams {
+  provider?: "razorpay";
+  description?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerContact?: string;
+  notes?: Record<string, string>;
+}
+
 export interface PolarCheckoutSessionParams extends CreateCheckoutSessionParams {
   provider?: "polar";
   productId: string;
@@ -174,6 +190,7 @@ export type CheckoutParamsForConfig<T extends PaymentConfig> =
   T extends SSLCommerzConfig ? SSLCommerzCheckoutSessionParams :
   T extends NagadConfig ? NagadCheckoutSessionParams :
   T extends PolarConfig ? PolarCheckoutSessionParams :
+  T extends RazorpayConfig ? RazorpayCheckoutSessionParams :
   CreateCheckoutSessionParams;
 
 export interface PaymentInstance<T extends PaymentConfig = PaymentConfig> {

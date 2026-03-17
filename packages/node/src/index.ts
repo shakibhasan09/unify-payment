@@ -3,6 +3,7 @@ import { LemonSqueezy } from "./lib/lemonsqueezy";
 import { Nagad } from "./lib/nagad";
 import { Paypal } from "./lib/paypal";
 import { Polar } from "./lib/polar";
+import { Razorpay } from "./lib/razorpay";
 import { SSLCommerz } from "./lib/sslcommerz";
 import { Stripe } from "./lib/stripe";
 import { createPayment } from "./unified";
@@ -12,6 +13,7 @@ const UnifyPayment = {
   Bkash,
   Paypal,
   Polar,
+  Razorpay,
   SSLCommerz,
   Stripe,
   Nagad,
@@ -31,6 +33,7 @@ export type {
   SSLCommerzConfig,
   NagadConfig,
   PolarConfig,
+  RazorpayConfig,
   StripeCheckoutSessionParams,
   PaypalCheckoutSessionParams,
   LemonSqueezyCheckoutSessionParams,
@@ -38,6 +41,7 @@ export type {
   SSLCommerzCheckoutSessionParams,
   NagadCheckoutSessionParams,
   PolarCheckoutSessionParams,
+  RazorpayCheckoutSessionParams,
   VerifyWebhookParams,
   WebhookEvent,
 } from "./types/unified";

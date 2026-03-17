@@ -6,6 +6,7 @@ import { Bkash } from "./lib/bkash";
 import { SSLCommerz } from "./lib/sslcommerz";
 import { Nagad } from "./lib/nagad";
 import { Polar } from "./lib/polar";
+import { Razorpay } from "./lib/razorpay";
 import type {
   PaymentConfig,
   PaymentInstance,
@@ -17,6 +18,7 @@ import type {
   SSLCommerzConfig,
   NagadConfig,
   PolarConfig,
+  RazorpayConfig,
   StripeCheckoutSessionParams,
   PaypalCheckoutSessionParams,
   LemonSqueezyCheckoutSessionParams,
@@ -24,6 +26,7 @@ import type {
   SSLCommerzCheckoutSessionParams,
   NagadCheckoutSessionParams,
   PolarCheckoutSessionParams,
+  RazorpayCheckoutSessionParams,
   VerifyWebhookParams,
   WebhookEvent,
 } from "./types/unified";
@@ -331,6 +334,56 @@ function createPolarPayment(config: PolarConfig): PaymentInstance<PolarConfig> {
   };
 }
 
+function createRazorpayPayment(
+  config: RazorpayConfig
+): PaymentInstance<RazorpayConfig> {
+  const razorpay = new Razorpay({
+    keyId: config.keyId,
+    keySecret: config.keySecret,
+  });
+
+  return {
+    async createCheckoutSession(
+      params: RazorpayCheckoutSessionParams
+    ): Promise<CheckoutSession> {
+      const url = await razorpay.getCheckoutUrl({
+        amount: params.amount,
+        currency: params.currency.toUpperCase(),
+        description: params.description,
+        customer: {
+          name: params.customerName,
+          email: params.customerEmail,
+          contact: params.customerContact,
+        },
+        notify: { sms: false, email: false },
+        callback_url: params.successUrl,
+        callback_method: "get",
+        notes: params.notes,
+      });
+
+      return { url };
+    },
+
+    async verifyWebhook(params: VerifyWebhookParams): Promise<WebhookEvent> {
+      const result = await razorpay.verifySignature({
+        body: params.body,
+        signature: params.signature,
+        secret: params.secret,
+      });
+
+      if ("error" in result) {
+        throw result.error;
+      }
+
+      return {
+        type: result.type,
+        data: result.event,
+        raw: result.event,
+      };
+    },
+  };
+}
+
 export function createPayment<T extends PaymentConfig>(config: T): PaymentInstance<T> {
   switch (config.provider) {
     case "stripe":
@@ -347,6 +400,8 @@ export function createPayment<T extends PaymentConfig>(config: T): PaymentInstan
       return createNagadPayment(config) as PaymentInstance<T>;
     case "polar":
       return createPolarPayment(config) as PaymentInstance<T>;
+    case "razorpay":
+      return createRazorpayPayment(config) as PaymentInstance<T>;
     default:
       throw new Error(`Unsupported payment provider: ${(config as any).provider}`);
   }
