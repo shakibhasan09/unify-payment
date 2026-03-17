@@ -29,6 +29,9 @@ importers:
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0
+      '@unify-payment/node':
+        specifier: workspace:*
+        version: link:../../packages/node
       typescript:
         specifier: ^5.5.2
         version: 5.9.3
