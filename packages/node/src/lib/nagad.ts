@@ -123,7 +123,7 @@ export class Nagad extends UnifyFetch {
       },
     };
 
-    const [data] = await this.axios<INagadConfirmPaymentResponse>(
+    const [data] = await this.jsonFetch<INagadConfirmPaymentResponse>(
       `${this.getApiBaseUrl()}/check-out/complete/${options.paymentReferenceId}`,
       {
         method: "POST",
@@ -157,7 +157,7 @@ export class Nagad extends UnifyFetch {
       accountNumber: this.getMerchantNumber(),
     };
 
-    const [res] = await this.axios<INagadInitializeResponse>(endpoint, {
+    const [res] = await this.jsonFetch<INagadInitializeResponse>(endpoint, {
       method: "POST",
       headers: {
         ...this.getApiHeaders(),
