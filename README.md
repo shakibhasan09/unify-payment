@@ -15,14 +15,14 @@ UnifyPayment is a TypeScript package that provides a unified interface for integ
 | --- | --- | --- | --- | --- |
 | Stripe | Yes | Yes | :white_check_mark: | :white_check_mark: |
 | LemonSqueezy | Yes | Yes | :white_check_mark: | :white_check_mark: |
-| SSLCommerz | Yes | No | :x: | :x: |
+| SSLCommerz | Yes | No | :white_check_mark: | :x: |
 | PayPal | Yes | No | :x: | :x: |
 | Bkash | Yes | No | :x: | :x: |
 | Nagad | Yes | No | :x: | :x: |
 | Razorpay | Yes | Yes | :x: | :x: |
-| Polar | Yes | Yes | :x: | :x: |
+| Polar | Yes | Yes | :white_check_mark: | :white_check_mark: |
 | Paddle | Yes | Yes | :x: | :x: |
-| Coinbase | Yes | Yes | :x: | :x: |
+| Coinbase | Yes | Yes | :white_check_mark: | :white_check_mark: |
 
 ## Installation
 
