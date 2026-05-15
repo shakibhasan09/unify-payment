@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import type {
   IPolarOptions,
   IPolarCheckoutCreatePayload,
@@ -78,16 +79,17 @@ export class Polar extends UnifyFetch {
         encoder.encode(message)
       );
 
-      const expectedSignature = btoa(
-        String.fromCharCode(...new Uint8Array(hmac))
-      );
+      const expected = Buffer.from(new Uint8Array(hmac));
 
       // Standard Webhooks signature header may contain multiple signatures
       // Format: "v1,<base64>" or multiple space-separated values
-      const signatures = payload.signature.split(" ");
-      const isValid = signatures.some((sig) => {
+      const isValid = payload.signature.split(" ").some((sig) => {
         const value = sig.startsWith("v1,") ? sig.slice(3) : sig;
-        return value === expectedSignature;
+        const provided = Buffer.from(value, "base64");
+        return (
+          provided.length === expected.length &&
+          timingSafeEqual(provided, expected)
+        );
       });
 
       if (!isValid) {

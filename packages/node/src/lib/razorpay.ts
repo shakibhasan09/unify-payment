@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import type {
   IRazorpayOptions,
   IRazorpayPaymentLinkPayload,
@@ -68,11 +69,13 @@ export class Razorpay extends UnifyFetch {
         encoder.encode(payload.body)
       );
 
-      const expectedSignature = Array.from(new Uint8Array(hmac))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
+      const expected = Buffer.from(new Uint8Array(hmac));
+      const provided = Buffer.from(payload.signature, "hex");
 
-      if (expectedSignature !== payload.signature) {
+      if (
+        provided.length !== expected.length ||
+        !timingSafeEqual(provided, expected)
+      ) {
         throw new Error("Invalid webhook signature");
       }
 

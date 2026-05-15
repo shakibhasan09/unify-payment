@@ -184,7 +184,6 @@ function createLemonSqueezyPayment(
         body: params.body,
         signature: params.signature,
         secret: params.secret,
-        x_event: "",
       });
 
       if ("error" in result) {
