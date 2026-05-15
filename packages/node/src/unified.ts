@@ -39,7 +39,6 @@ import type {
 
 function createStripePayment(config: StripeConfig): PaymentInstance<StripeConfig> {
   const stripe = new Stripe(config.apiKey, config.config);
-  const stripeSDK = new StripeSDK(config.apiKey, config.config);
 
   return {
     async createCheckoutSession(params: StripeCheckoutSessionParams): Promise<CheckoutSession> {
@@ -63,7 +62,7 @@ function createStripePayment(config: StripeConfig): PaymentInstance<StripeConfig
         ...params.overrides,
       };
 
-      const session = await stripeSDK.checkout.sessions.create(sessionParams);
+      const session = await stripe.createCheckoutSession(sessionParams);
 
       if (!session.url) {
         throw new Error("Failed to create checkout session");
@@ -106,7 +105,7 @@ function createPaypalPayment(config: PaypalConfig): PaymentInstance<PaypalConfig
   return {
     async createCheckoutSession(params: PaypalCheckoutSessionParams): Promise<CheckoutSession> {
       const amountStr = (params.amount / 100).toFixed(2);
-      const currencyCode = params.currency.toUpperCase() as "USD" | "EUR";
+      const currencyCode = params.currency.toUpperCase();
 
       const url = await paypal.getCheckoutUrl({
         intent: "CAPTURE",
@@ -184,7 +183,6 @@ function createLemonSqueezyPayment(
         body: params.body,
         signature: params.signature,
         secret: params.secret,
-        x_event: "",
       });
 
       if ("error" in result) {
@@ -216,7 +214,7 @@ function createBkashPayment(config: BkashConfig): PaymentInstance<BkashConfig> {
         payerReference: params.payerReference,
         callbackURL: params.successUrl,
         amount: String(params.amount),
-        currency: "BDT",
+        currency: params.currency.toUpperCase(),
         intent: "sale",
         merchantInvoiceNumber: params.merchantInvoiceNumber,
       });
@@ -237,7 +235,7 @@ function createSSLCommerzPayment(config: SSLCommerzConfig): PaymentInstance<SSLC
     async createCheckoutSession(
       params: SSLCommerzCheckoutSessionParams
     ): Promise<CheckoutSession> {
-      const currencyCode = params.currency.toUpperCase() as "USD" | "EUR";
+      const currencyCode = params.currency.toUpperCase();
 
       const url = await sslcommerz.getCheckoutUrl({
         tran_id: params.transactionId,

@@ -1,6 +1,9 @@
+import { timingSafeEqual } from "node:crypto";
 import {
   ILemonSqueezyCheckoutOptions,
+  ILemonSqueezyWebhookEeventResponse,
   TGetCheckoutUrl,
+  TLemonSqueezyWebhookEvents,
   TWebhookEventResponse,
 } from "../types/lemonsqueezy";
 import { UnifyFetch } from "../utils/fetch";
@@ -43,7 +46,6 @@ export class LemonSqueezy extends UnifyFetch {
     signature: string;
     secret: string;
     body: string;
-    x_event: string;
   }): Promise<TWebhookEventResponse> {
     try {
       const encoder = new TextEncoder();
@@ -62,17 +64,21 @@ export class LemonSqueezy extends UnifyFetch {
         encoder.encode(payload.body)
       );
 
-      const digest = Array.from(new Uint8Array(hmac))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
+      const expected = Buffer.from(new Uint8Array(hmac));
+      const provided = Buffer.from(payload.signature, "hex");
 
-      if (digest !== payload.signature) {
+      if (
+        provided.length !== expected.length ||
+        !timingSafeEqual(provided, expected)
+      ) {
         throw new Error("Invalid signature");
       }
 
+      const event = JSON.parse(payload.body) as ILemonSqueezyWebhookEeventResponse;
+
       return {
-        event: JSON.parse(payload.body),
-        type: payload.x_event as any,
+        event,
+        type: event.meta?.event_name as TLemonSqueezyWebhookEvents,
       };
     } catch (err) {
       return {

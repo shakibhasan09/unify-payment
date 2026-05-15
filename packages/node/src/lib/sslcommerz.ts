@@ -18,26 +18,6 @@ export class SSLCommerz extends UnifyFetch {
     return `${this.getApiBaseUrl()}/gwprocess/v4/api.php`;
   }
 
-  private getApiValidationUrl() {
-    return `${this.getApiBaseUrl()}/validator/api/validationserverAPI.php`;
-  }
-
-  private getApiRefundUrl() {
-    return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
-  }
-
-  private getApiRefundQueryUrl() {
-    return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
-  }
-
-  private getApiTransactionQueryBySessionIdUrl() {
-    return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
-  }
-
-  private getApiTransactionQueryByTransactionIdUrl() {
-    return `${this.getApiBaseUrl()}/validator/api/merchantTransIDvalidationAPI.php`;
-  }
-
   private getApiHeaders() {
     return {
       "Content-Type": "application/x-www-form-urlencoded",

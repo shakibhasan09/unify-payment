@@ -1,6 +1,4 @@
-import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
+import crypto from "node:crypto";
 import { UnifyFetch } from "../utils/fetch";
 import {
   INagadConfirmPaymentArgs,
@@ -12,15 +10,10 @@ import {
   INagadOptions,
   INagadSensitiveData,
 } from "../types/nagad";
-import crypto from "node:crypto";
-import NodeRSA from "node-rsa";
 
 export class Nagad extends UnifyFetch {
   constructor(private options: INagadOptions) {
     super();
-
-    dayjs.extend(timezone);
-    dayjs.extend(utc);
   }
 
   private getApiBaseUrl() {
@@ -48,7 +41,21 @@ export class Nagad extends UnifyFetch {
   }
 
   private getTimeStamp() {
-    return dayjs().tz("Asia/Dhaka").format("YYYYMMDDHHmmss");
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Dhaka",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    }).formatToParts(new Date());
+
+    const get = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find((p) => p.type === type)?.value ?? "";
+
+    return `${get("year")}${get("month")}${get("day")}${get("hour")}${get("minute")}${get("second")}`;
   }
 
   private getCallbackUrl() {
@@ -84,12 +91,15 @@ export class Nagad extends UnifyFetch {
   private decrypt<T>(data: string): T {
     const privateKey = `-----BEGIN PRIVATE KEY-----\n${this.getPrivateKey()}\n-----END PRIVATE KEY-----`;
 
-    const keyRSA = new NodeRSA(privateKey, "pkcs8", {
-      encryptionScheme: "pkcs1",
-    });
-    keyRSA.setOptions({ environment: "browser" });
-
-    const decrypted = keyRSA.decrypt(data).toString("utf8");
+    const decrypted = crypto
+      .privateDecrypt(
+        {
+          key: privateKey,
+          padding: crypto.constants.RSA_PKCS1_PADDING,
+        },
+        Buffer.from(data, "base64")
+      )
+      .toString("utf8");
 
     return JSON.parse(decrypted);
   }

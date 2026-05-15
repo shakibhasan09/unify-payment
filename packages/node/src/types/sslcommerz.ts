@@ -5,7 +5,7 @@ export type ISSLCommerzCreateCheckoutPayload =
       store_passwd: string;
 
       total_amount: number;
-      currency: "USD" | "EUR";
+      currency: string;
 
       success_url?: string;
       cancel_url?: string;
@@ -39,7 +39,7 @@ export type ISSLCommerzCreateCheckoutPayload =
       store_passwd: string;
 
       total_amount: number;
-      currency: "USD" | "EUR";
+      currency: string;
 
       success_url?: string;
       cancel_url?: string;

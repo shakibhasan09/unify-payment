@@ -4,19 +4,14 @@ import { TStripeWebhookEventResponse } from "../types/stripe";
 export class Stripe {
   private stripe: StripeSDK;
 
-  constructor(
-    private apiKey: string,
-    config?: StripeSDK.StripeConfig
-  ) {
+  constructor(apiKey: string, config?: StripeSDK.StripeConfig) {
     this.stripe = new StripeSDK(apiKey, config);
   }
 
-  async getCheckoutUrl(params: StripeSDK.Checkout.SessionCreateParams) {
-    const session = await this.stripe.checkout.sessions.create(params);
-    if (!session.url) {
-      throw new Error("Failed to get checkout url");
-    }
-    return session.url;
+  async createCheckoutSession(
+    params: StripeSDK.Checkout.SessionCreateParams
+  ): Promise<StripeSDK.Checkout.Session> {
+    return this.stripe.checkout.sessions.create(params);
   }
 
   async verifySignature(payload: {
