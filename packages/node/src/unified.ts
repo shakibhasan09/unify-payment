@@ -105,7 +105,7 @@ function createPaypalPayment(config: PaypalConfig): PaymentInstance<PaypalConfig
   return {
     async createCheckoutSession(params: PaypalCheckoutSessionParams): Promise<CheckoutSession> {
       const amountStr = (params.amount / 100).toFixed(2);
-      const currencyCode = params.currency.toUpperCase() as "USD" | "EUR";
+      const currencyCode = params.currency.toUpperCase();
 
       const url = await paypal.getCheckoutUrl({
         intent: "CAPTURE",
@@ -214,7 +214,7 @@ function createBkashPayment(config: BkashConfig): PaymentInstance<BkashConfig> {
         payerReference: params.payerReference,
         callbackURL: params.successUrl,
         amount: String(params.amount),
-        currency: "BDT",
+        currency: params.currency.toUpperCase(),
         intent: "sale",
         merchantInvoiceNumber: params.merchantInvoiceNumber,
       });
@@ -235,7 +235,7 @@ function createSSLCommerzPayment(config: SSLCommerzConfig): PaymentInstance<SSLC
     async createCheckoutSession(
       params: SSLCommerzCheckoutSessionParams
     ): Promise<CheckoutSession> {
-      const currencyCode = params.currency.toUpperCase() as "USD" | "EUR";
+      const currencyCode = params.currency.toUpperCase();
 
       const url = await sslcommerz.getCheckoutUrl({
         tran_id: params.transactionId,

@@ -12,17 +12,17 @@ export interface IPaypalPayload {
       description: string;
       quantity: number;
       unit_amount: {
-        currency_code: "USD" | "EUR";
+        currency_code: string;
         value: string;
       };
     }[];
 
     amount: {
-      currency_code: "USD" | "EUR";
+      currency_code: string;
       value: string;
       breakdown: {
         item_total: {
-          currency_code: "USD" | "EUR";
+          currency_code: string;
           value: string;
         };
       };

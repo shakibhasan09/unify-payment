@@ -17,7 +17,7 @@ export interface IBkashCheckoutOptions {
   payerReference: string;
   callbackURL: string;
   amount: string;
-  currency: "BDT";
+  currency: string;
   intent: "sale";
   merchantInvoiceNumber: string;
   merchantAssociationInfo?: string;

@@ -85,6 +85,10 @@ export type PaymentConfig =
 // --- Unified checkout session params ---
 
 export interface CreateCheckoutSessionParams {
+  /**
+   * Amount in the currency's smallest unit (e.g. cents for USD/EUR, paise for INR, poisha for BDT).
+   * Providers that expect a decimal amount (PayPal, SSLCommerz, Coinbase) divide by 100 internally.
+   */
   amount: number;
   currency: string;
   successUrl: string;
