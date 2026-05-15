@@ -4,6 +4,13 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "keywords": [
     "UnifyPayment",
     "typescript",
@@ -12,6 +19,11 @@
     "payment-integration",
     "stripe",
     "lemonsqueezy",
+    "paypal",
+    "paddle",
+    "polar",
+    "razorpay",
+    "coinbase",
     "payment-gateway",
     "multi-provider",
     "payment-switching",
@@ -21,6 +33,7 @@
     "payment-sdk",
     "payment-processor",
     "payment-library",
+    "webhook",
     "SSLCommerz",
     "Bkash",
     "Nagad"
@@ -33,6 +46,9 @@
     "dist"
   ],
   "license": "ISC",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch"
