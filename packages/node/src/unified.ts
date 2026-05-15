@@ -39,7 +39,6 @@ import type {
 
 function createStripePayment(config: StripeConfig): PaymentInstance<StripeConfig> {
   const stripe = new Stripe(config.apiKey, config.config);
-  const stripeSDK = new StripeSDK(config.apiKey, config.config);
 
   return {
     async createCheckoutSession(params: StripeCheckoutSessionParams): Promise<CheckoutSession> {
@@ -63,7 +62,7 @@ function createStripePayment(config: StripeConfig): PaymentInstance<StripeConfig
         ...params.overrides,
       };
 
-      const session = await stripeSDK.checkout.sessions.create(sessionParams);
+      const session = await stripe.createCheckoutSession(sessionParams);
 
       if (!session.url) {
         throw new Error("Failed to create checkout session");
